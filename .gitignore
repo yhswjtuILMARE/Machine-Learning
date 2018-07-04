@@ -1,4 +1,7 @@
 *.gz
 *.tar.gz
 *.zip
+*.bak
+*.dat
+*.dir
 *.txt
