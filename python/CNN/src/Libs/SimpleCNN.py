@@ -126,5 +126,4 @@ file_path = r"G:/研究生课件/人工神经网络/神经网络/dataset_cat_dog
 
 if __name__ == "__main__":
     cnn = SimpleCNN(0.001, 2000)
-    cnn.loadModel()
-    cnn.test()
+    cnn.train()
