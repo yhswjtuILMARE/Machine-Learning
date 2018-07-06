@@ -5,10 +5,11 @@ Created on 2018年7月2日
 '''
 import os
 import numpy as np
-import re
 from PIL import Image, ImageEnhance
+import re
 import time
 import random
+from matplotlib import pyplot as plt
 
 file_path = r"G:/研究生课件/人工神经网络/神经网络/dataset_cat_dog_classification/dataset/"
 
@@ -50,6 +51,7 @@ class ImageObject:
             image = image.resize(self._shape)
             image.save("{0}{1}".format(self._test_path, name))
     def nextBatch(self, num=50):
+        random.seed(time.time())
         list = random.sample(self._trainSet, num)
         train = []
         label = []
@@ -82,6 +84,11 @@ if __name__ == "__main__":
     obj = ImageObject(file_path)
     train, label = obj.nextBatch(50)
     print(train.shape, label.shape)
-    for test, testLabel in obj.generateTestBatch(126):
-        print(test.shape, testLabel.shape)
+    image = Image.open("{0}{1}".format(file_path, "cat.1.jpg"))
+    image = ImageEnhance.Color(image).enhance(5.0)
+    image = np.asarray(image)
+    figure = plt.figure("test")
+    ax = figure.add_subplot(111)
+    ax.imshow(image)
+    plt.show()
     print(time.clock() - start)

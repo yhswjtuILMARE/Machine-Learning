@@ -9,16 +9,13 @@ import numpy as np
 from Utils.DataUtil import ImageObject
 from matplotlib import pyplot as plt
 import matplotlib as mpl
+from PIL import Image
 
 save_path = r"G:/Machine-Learning/python/CNN/modelFile/AlexNet/dogandcat/"
 
 def weight_variable(shape):
     initial = tf.truncated_normal(shape, dtype=tf.float32, stddev=0.1)
     return tf.Variable(initial)
-
-def bias_variable(shape):
-    initial = tf.constant(0.1, shape=shape)
-    return tf.Variable(initial, dtype=tf.float32)
 
 def conv2d(x, W, strides, padding="VALID"):
     return tf.nn.conv2d(x, W, strides=strides, padding=padding)
@@ -48,40 +45,22 @@ class AlexNet:
         self._y = tf.placeholder(tf.float32, [None, self._classify])
         self._keep_prob = tf.placeholder(dtype=tf.float32)
         with tf.name_scope("conv1") as scope:    
-            kernel = tf.Variable(tf.truncated_normal([11, 11, self._k, 96], 
+            kernel = tf.Variable(tf.truncated_normal([5, 5, self._k, 32], 
                                                      stddev=0.1, dtype=tf.float32))
             h_conv1 = conv2d(image, kernel, [1, 4, 4, 1])
-            biases = tf.Variable(tf.constant(0.0, shape=[96], dtype=tf.float32))
+#             biases = tf.Variable(tf.constant(0.1, shape=[32], dtype=tf.float32))
+            biases = tf.Variable(tf.random_normal(shape=[32], stddev=0.1, dtype=tf.float32))
             conv1 = tf.nn.relu(h_conv1 + biases)
-            pool1 = tf.nn.max_pool(conv1, ksize=[1, 3, 3, 1], 
+            pool1 = tf.nn.max_pool(conv1, ksize=[1, 2, 2, 1], 
                                    strides=[1, 2, 2, 1], padding="SAME")
         with tf.name_scope("conv2") as scope:
-            kernel = tf.Variable(tf.truncated_normal([5, 5, 96, 256], 
-                                                     stddev=0.1, dtype=tf.float32))
-            h_conv2 = conv2d(pool1, kernel, strides=[1, 1, 1, 1], padding="SAME")
-            biases = tf.Variable(tf.constant(0.0, shape=[256], dtype=tf.float32))
-            conv2 = tf.nn.relu(h_conv2 + biases)
-            pool2 = tf.nn.max_pool(conv2, ksize=[1, 3, 3, 1], 
-                                   strides=[1, 2, 2, 1], padding="SAME")
-        with tf.name_scope("conv3") as scope:
-            kernel = tf.Variable(tf.truncated_normal([3, 3, 256, 384], 
-                                                      stddev=0.1, dtype=tf.float32))
-            h_conv3 = conv2d(pool2, kernel, [1, 1, 1, 1], "SAME")
-            biases = tf.Variable(tf.constant(0.0, dtype=tf.float32, shape=[384]))
-            conv3 = tf.nn.relu(h_conv3 + biases)
-        with tf.name_scope("conv4") as scope:
-            kernel = tf.Variable(tf.truncated_normal([3, 3, 384, 384], 
+            kernel = tf.Variable(tf.truncated_normal([5, 5, 32, 64], 
                                                      dtype=tf.float32, stddev=0.1))
-            h_conv4 = conv2d(conv3, kernel, [1, 1, 1, 1], "SAME")
-            biases= tf.Variable(tf.constant(0.0, tf.float32, shape=[384]), dtype=tf.float32)
-            conv4 = tf.nn.relu(h_conv4 + biases)
-        with tf.name_scope("conv5") as scope:
-            kernel = tf.Variable(tf.truncated_normal([3, 3, 384, 256], 
-                                                     dtype=tf.float32, stddev=0.1))
-            h_conv5 = conv2d(conv4, kernel, [1, 1, 1, 1], "SAME")
-            biases = tf.Variable(tf.constant(0.0, dtype=tf.float32, shape=[256]))
+            h_conv5 = conv2d(pool1, kernel, [1, 1, 1, 1], "SAME")
+            biases = tf.Variable(tf.random_normal(shape=[64], stddev=0.1, dtype=tf.float32))
+#             biases = tf.Variable(tf.constant(0.1, dtype=tf.float32, shape=[64]))
             conv5 = tf.nn.relu(h_conv5 + biases)
-            pool5 = tf.nn.max_pool(conv5, ksize=[1, 3, 3, 1], 
+            pool5 = tf.nn.max_pool(conv5, ksize=[1, 2, 2, 1], 
                                    strides=[1, 2, 2, 1], padding="SAME")
             self._dim = 1
             var = pool5.get_shape().as_list()
@@ -89,17 +68,14 @@ class AlexNet:
                 self._dim *= var[i + 1]
             pool5 = tf.reshape(pool5, [-1, self._dim])
         with tf.name_scope("link1") as scope:
-            kernel = tf.Variable(tf.truncated_normal([self._dim, 4096], stddev=0.1, dtype=tf.float32))
-            biases = tf.Variable(tf.constant(0.0, dtype=tf.float32, shape=[4096]))
+            kernel = tf.Variable(tf.truncated_normal([self._dim, 1024], stddev=0.1, dtype=tf.float32))
+            biases = tf.Variable(tf.random_normal(shape=[1024], stddev=0.1, dtype=tf.float32))
+#             biases = tf.Variable(tf.constant(0.1, dtype=tf.float32, shape=[1024]))
             h_fc = tf.nn.dropout(tf.matmul(pool5, kernel) + biases, keep_prob=self._keep_prob)
-        with tf.name_scope("link2") as scope:
-            kernel = tf.Variable(tf.truncated_normal([4096, 4096], stddev=0.1, dtype=tf.float32))
-            biases = tf.Variable(tf.constant(0.0, dtype=tf.float32, shape=[4096]))
-            h_fc1 = tf.nn.dropout(tf.matmul(h_fc, kernel) + biases, keep_prob=self._keep_prob)
         with tf.name_scope("link3") as scope:
-            kernel = tf.Variable(tf.truncated_normal([4096, self._classify], stddev=0.1, dtype=tf.float32))
-            biases = tf.Variable(tf.constant(0.0, dtype=tf.float32, shape=[self._classify]))
-            self._out = tf.matmul(h_fc1, kernel) + biases
+            kernel = tf.Variable(tf.truncated_normal([1024, self._classify], stddev=0.1, dtype=tf.float32))
+            biases = tf.Variable(tf.random_normal(shape=[self._classify], stddev=0.1, dtype=tf.float32))
+            self._out = tf.matmul(h_fc, kernel) + biases
             self._pre = tf.nn.softmax(self._out)
     def defineLoss(self):
         self._cross_entry = tf.reduce_mean(
@@ -111,14 +87,40 @@ class AlexNet:
 #         optimizer = tf.train.AdamOptimizer(self._lr)
 #         self._train = optimizer.apply_gradients(zip(grads, vars))
         self._train = tf.train.AdamOptimizer(self._lr).minimize(self._cross_entry)
-    def train(self):
+    def train_1(self):
         try:
-#             mnist = input_data.read_data_sets("MNIST_data/", one_hot=True)
             fig = plt.figure("cross-entropy")
             mpl.rcParams['xtick.labelsize'] = 8
             mpl.rcParams['ytick.labelsize'] = 8
             ax = fig.add_subplot(111)
             ax.grid(True)
+            ac = []
+            aac = []
+            for i in range(self._maxIter):
+                train, label = self._imageObject.nextBatch(24)
+                _, accuracy, loss = self._sess.run([self._train, self._accuracy, self._cross_entry], feed_dict={self._x: train, 
+                                                     self._y: label, self._keep_prob: 0.5})
+                ac.append(accuracy)
+                aac.append(np.mean(np.array(ac)))
+                ax.plot(np.arange(len(ac)), np.array(ac), linewidth=0.8, color="b")
+                ax.plot(np.arange(len(aac)), np.array(aac), linewidth=0.8, color="r")
+                plt.pause(0.1)
+                if i % 10 == 0:
+                    print("step {0:d}/{1:d},accuracy: {2:.3f}, loss: {3:.3f}".format(i, self._maxIter, accuracy, loss))
+                if i % 250 == 0:    
+                    tf.train.Saver().save(self._sess, "{0}model".format(save_path), global_step=i)
+        except Exception as e:
+            print(e)
+        finally:
+            plt.show()
+    def train(self):
+        try:
+#             mnist = input_data.read_data_sets("MNIST_data/", one_hot=True)
+#             fig = plt.figure("cross-entropy")
+#             mpl.rcParams['xtick.labelsize'] = 8
+#             mpl.rcParams['ytick.labelsize'] = 8
+#             ax = fig.add_subplot(111)
+#             ax.grid(True)
             ac = []
             aac = []
             with tf.Session() as sess:
@@ -130,28 +132,52 @@ class AlexNet:
                                                      self._y: label, self._keep_prob: 0.5})
                     ac.append(accuracy)
                     aac.append(np.mean(np.array(ac)))
-                    ax.plot(np.arange(len(ac)), np.array(ac), linewidth=0.8, color="b")
-                    ax.plot(np.arange(len(aac)), np.array(aac), linewidth=0.8, color="r")
-                    plt.pause(0.1)
+#                     ax.plot(np.arange(len(ac)), np.array(ac), linewidth=0.8, color="b")
+#                     ax.plot(np.arange(len(aac)), np.array(aac), linewidth=0.8, color="r")
+#                     plt.pause(0.1)
                     if i % 10 == 0:
                         print("step {0:d}/{1:d},accuracy: {2:.3f}, loss: {3:.3f}".format(i, self._maxIter, accuracy, loss))
-                    if i % 100 == 0:    
+                    if i % 250 == 0:    
                         tf.train.Saver().save(sess, "{0}model".format(save_path), global_step=i)
         except Exception as e:
             print(e)
         finally:
+            fig = plt.figure("cross-entropy")
+            mpl.rcParams['xtick.labelsize'] = 8
+            mpl.rcParams['ytick.labelsize'] = 8
+            ax = fig.add_subplot(111)
+            ax.plot(np.arange(len(ac)), np.array(ac), linewidth=0.8, color="b")
+            ax.plot(np.arange(len(aac)), np.array(aac), linewidth=0.8, color="r")
             plt.show()
     def loadModel(self):
         self._sess = tf.Session()
+        print(tf.train.latest_checkpoint(save_path))
         tf.train.Saver().restore(self._sess, tf.train.latest_checkpoint(save_path))
     def testCatAndDog(self):
         result = []
-        for img, label in self._imageObject.generateTestBatch(50):
-            accuracy = self._sess.run(self._accuracy, 
+        for img, label in self._imageObject.generateTestBatch(200):
+            accuracy, pre = self._sess.run([self._accuracy, self._pre], 
                                  feed_dict={self._x: img, self._y: label, self._keep_prob:1.0})
+#             for i in range(len(label)):
+#                 lab = label[i]
+#                 predict = pre[i]
+#                 image = img[i]
+#                 if np.argmax(predict) == 0:
+#                     tmp = Image.fromarray(image)
+#                     if np.argmax(lab) == 0:
+#                         tmp.save("g:/dogandcat/cat/cat-{0}-{1}.jpg".format(len(result), i))
+#                     else:
+#                         tmp.save("g:/dogandcat/cat/dog-{0}-{1}.jpg".format(len(result), i))
+#                 else:
+#                     tmp = Image.fromarray(image)
+#                     if np.argmax(lab) == 0:
+#                         tmp.save("g:/dogandcat/dog/cat-{0}-{1}.jpg".format(len(result), i))
+#                     else:
+#                         tmp.save("g:/dogandcat/dog/dog-{0}-{1}.jpg".format(len(result), i))
+            
             result.append(accuracy)
             print("step:{0:d}, accuracy: {1:.3f}".format(len(result), accuracy))
-        print("average accuracy:", np.mean(np.array(result)))
+        print("average accuracy: {0:.3f}".format(np.mean(np.array(result))))
     def test(self):
         mnist = input_data.read_data_sets("MNIST_data/", one_hot=True)
         count = 0
@@ -172,7 +198,7 @@ file_path = r"G:/研究生课件/人工神经网络/神经网络/dataset_cat_dog
 
 if __name__ == "__main__":
     obj = ImageObject(file_path)
-    alex = AlexNet(0.0001, 3, 2, 2000, obj)
-    alex.train()
-#     alex.loadModel()
-#     alex.testCatAndDog()
+    alex = AlexNet(0.0001, 3, 2, 20000, obj)
+#     alex.train()
+    alex.loadModel()
+    alex.testCatAndDog()

@@ -9,7 +9,7 @@ import numpy as np
 from matplotlib import pyplot as plt
 import matplotlib as mpl
 
-save_path = r"G:/Machine-Learning-Study-Notes/python/CNN/modelFile/SimpleCNN/"
+save_path = r"G:/Machine-Learning/python/CNN/modelFile/SimpleCNN/"
 
 def weight_variable(shape):
     initial = tf.truncated_normal(shape, dtype=tf.float32, stddev=0.1)
@@ -126,4 +126,5 @@ file_path = r"G:/研究生课件/人工神经网络/神经网络/dataset_cat_dog
 
 if __name__ == "__main__":
     cnn = SimpleCNN(0.001, 2000)
-    cnn.train()
+    cnn.loadModel()
+    cnn.test()
