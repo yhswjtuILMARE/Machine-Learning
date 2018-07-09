@@ -108,7 +108,7 @@ class AverageFace:
     def generateImage(self):
         width = self._shape[0]
         height = self._shape[1]
-        eyePoint = [(0.3 * width, height / 3.0), (0.7 * width, height / 3.0)]
+        eyePoint = [(0.34 * width, height / 2.2), (0.66 * width, height / 2.2)]
         boundPoint = [(0, 0), (width / 2.0, 0), (width - 1, 0), (width - 1, height / 2.0), (width - 1, height - 1),
                       (width / 2.0, height - 1), (0, height - 1), (0, height / 2.0)]
         pointsAvg = np.array([(0, 0)] * (len(self._pointsArray[0]) + len(boundPoint)), np.float32)
@@ -154,6 +154,6 @@ class AverageFace:
           
 
 if __name__ == "__main__":
-    obj = AverageFace(r"G:\Machine-Learning\python\FacePlus\dataset\presidents", keyPoint=(36, 45))
+    obj = AverageFace(r"G:\python\sources\nwpu\dectImage")
     obj.showImage()
-    obj.saveImage(r"g:/asasd.jpg")
+    obj.saveImage(r"g:/aaa.jpg")

@@ -48,6 +48,8 @@ def generateLandMark(imagePath):
             }
         for filename in os.listdir(imagePath):
             if filename.endswith("jpg"):
+                if os.path.exists(r"{0}{1}.txt".format(imagePath, filename[0 : 10])):
+                    continue
                 files = {
                     "image_file": open("{0}{1}".format(imagePath, filename), "rb")
                     }
@@ -71,3 +73,4 @@ def generateLandMark(imagePath):
 
 if __name__ == "__main__":
     imagePath = r"G:/python/sources/nwpu/dectImage/"
+    generateLandMark(imagePath)
