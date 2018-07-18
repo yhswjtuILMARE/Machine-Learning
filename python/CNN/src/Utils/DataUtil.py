@@ -14,7 +14,7 @@ from matplotlib import pyplot as plt
 file_path = r"G:/研究生课件/人工神经网络/神经网络/dataset_cat_dog_classification/dataset/"
 
 class ImageObject:
-    def __init__(self, filePath, shape=(224, 224)):
+    def __init__(self, filePath, shape=(227, 227)):
         self._shape = shape
         self._filePath = filePath
         self.generateDataSet()

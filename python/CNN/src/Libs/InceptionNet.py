@@ -151,6 +151,7 @@ class AlexNet:
             plt.show()
     def loadModel(self):
         self._sess = tf.Session()
+        print()
         print(tf.train.latest_checkpoint(save_path))
         tf.train.Saver().restore(self._sess, tf.train.latest_checkpoint(save_path))
     def testCatAndDog(self):
