@@ -199,7 +199,7 @@ file_path = r"G:/研究生课件/人工神经网络/神经网络/dataset_cat_dog
 
 if __name__ == "__main__":
     obj = ImageObject(file_path)
-    alex = AlexNet(0.0001, 3, 2, 2000, obj)
+    alex = AlexNet(0.0001, 3, 2, 20000, obj)
 #     alex.train()
     alex.loadModel()
     alex.testCatAndDog()
