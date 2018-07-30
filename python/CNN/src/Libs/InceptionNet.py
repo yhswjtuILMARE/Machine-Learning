@@ -6,12 +6,16 @@ Created on 2018年7月2日
 from tensorflow.examples.tutorials.mnist import input_data
 import tensorflow as tf
 import numpy as np
+import sys
+import os
+sys.path.append(os.getcwd())
 from Utils.DataUtil import ImageObject
 from matplotlib import pyplot as plt
 import matplotlib as mpl
 from PIL import Image
 
 save_path = r"G:/Machine-Learning/python/CNN/modelFile/AlexNet/dogandcat/"
+file_path = r"G:/研究生课件/人工神经网络/神经网络/dataset_cat_dog_classification/dataset/"
 
 def weight_variable(shape):
     initial = tf.truncated_normal(shape, dtype=tf.float32, stddev=0.1)
@@ -151,13 +155,13 @@ class AlexNet:
             plt.show()
     def loadModel(self):
         self._sess = tf.Session()
-        print()
+        print(save_path)
         print(tf.train.latest_checkpoint(save_path))
         tf.train.Saver().restore(self._sess, tf.train.latest_checkpoint(save_path))
     def testCatAndDog(self):
         result = []
         for img, label in self._imageObject.generateTestBatch(200):
-            accuracy, pre = self._sess.run([self._accuracy, self._pre], 
+            accuracy, pre, loss = self._sess.run([self._accuracy, self._pre, self._cross_entry], 
                                  feed_dict={self._x: img, self._y: label, self._keep_prob:1.0})
 #             for i in range(len(label)):
 #                 lab = label[i]
@@ -177,7 +181,7 @@ class AlexNet:
 #                         tmp.save("g:/dogandcat/dog/dog-{0}-{1}.jpg".format(len(result), i))
             
             result.append(accuracy)
-            print("step:{0:d}, accuracy: {1:.3f}".format(len(result), accuracy))
+            print("step:{0:d}, accuracy: {1:.3f}, loss: {2: .3f}".format(len(result), accuracy, loss))
         print("average accuracy: {0:.3f}".format(np.mean(np.array(result))))
     def test(self):
         mnist = input_data.read_data_sets("MNIST_data/", one_hot=True)
@@ -195,11 +199,9 @@ class AlexNet:
                 print("step: {0:d}/{1:d}, accuracy: {2:.3f}".format(i, len(mnist.test.images), count / i))
         print("accuracy: ", (count / i))
 
-file_path = r"G:/研究生课件/人工神经网络/神经网络/dataset_cat_dog_classification/dataset/"
-
 if __name__ == "__main__":
     obj = ImageObject(file_path)
     alex = AlexNet(0.0001, 3, 2, 20000, obj)
-#     alex.train()
-    alex.loadModel()
-    alex.testCatAndDog()
+    alex.train()
+#     alex.loadModel()
+#     alex.testCatAndDog()

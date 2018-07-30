@@ -11,10 +11,10 @@ import time
 import random
 from matplotlib import pyplot as plt
 
-file_path = r"G:/研究生课件/人工神经网络/神经网络/dataset_cat_dog_classification/dataset/"
+#file_path = r"G:/研究生课件/人工神经网络/神经网络/dataset_cat_dog_classification/dataset/"
 
 class ImageObject:
-    def __init__(self, filePath, shape=(227, 227)):
+    def __init__(self, filePath, shape=(224, 224)):
         self._shape = shape
         self._filePath = filePath
         self.generateDataSet()
@@ -22,6 +22,9 @@ class ImageObject:
         list = os.listdir(self._filePath)
         self._train_path = "{0}{1}".format(self._filePath, "train/")
         self._test_path = "{0}{1}".format(self._filePath, "test/")
+        if not os.path.exists(self._train_path) or not os.path.exists(self._test_path):
+            os.mkdir(self._train_path)
+            os.mkdir(self._test_path)
         if os.listdir(self._train_path) and os.listdir(self._test_path):
             self._trainSet = set(os.listdir(self._train_path))
             self._testSet = set(os.listdir(self._test_path))
@@ -38,7 +41,7 @@ class ImageObject:
                 continue
             if item not in self._trainSet:
                 self._trainSet.add(item)
-                image = Image.open("{0}{1}".format(file_path, item))
+                image = Image.open("{0}{1}".format(self._filePath, item))
                 image = image.resize(self._shape)
                 image.save("{0}{1}".format(self._train_path, item))
         self._testSet = self._testSet - self._trainSet
@@ -47,7 +50,7 @@ class ImageObject:
             i += 1
             if i % 500 == 0:
                 print(i)
-            image = Image.open("{0}{1}".format(file_path, name))
+            image = Image.open("{0}{1}".format(self._filePath, name))
             image = image.resize(self._shape)
             image.save("{0}{1}".format(self._test_path, name))
     def nextBatch(self, num=50):
@@ -79,11 +82,11 @@ class ImageObject:
                 label = []
         yield np.array(test), np.array(label)
 
-if __name__ == "__main__":
-    start = time.clock()
-    obj = ImageObject(file_path)
-    train, label = obj.nextBatch(50)
-    print(train.shape, label.shape)
+# if __name__ == "__main__":
+#     start = time.clock()
+#     obj = ImageObject(file_path)
+#     train, label = obj.nextBatch(50)
+#     print(train.shape, label.shape)
 #     image = Image.open("{0}{1}".format(file_path, "cat.1.jpg"))
 #     image = ImageEnhance.Color(image).enhance(5.0)
 #     image = np.asarray(image)
