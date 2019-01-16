@@ -199,3 +199,5 @@ class corpus:
                 y = np.zeros_like(x)
                 y[:, :-1], y[:, -1] = x[:, 1:], x[:, 0]
                 yield x, y
+
+

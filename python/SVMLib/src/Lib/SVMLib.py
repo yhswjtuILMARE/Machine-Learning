@@ -4,6 +4,7 @@ Created on 2018年3月28日
 @author: IL MARE
 '''
 import numpy as np
+import Lib.RFLib as RFLib
 
 def kernalTransfrom(dataMatrix, vector, kTup):
     if kTup[0] == "lin":
