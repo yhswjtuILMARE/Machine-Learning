@@ -8,6 +8,8 @@ import cv2
 import matplotlib.pyplot as plt
 from dlib import get_frontal_face_detector as detector
 from dlib import shape_predictor as predictor
+from tensorflow.examples.tutorials.mnist import input_data
+import tensorflow as tf
 
 def detectFaceWithRectangle(img):
     '''
@@ -41,25 +43,25 @@ def getFaceLandMark(img, rect, modelFile):
         landMarkPoints.append([p.x, p.y])
     return np.asarray(landMarkPoints, dtype=np.float32), points
 
-def tmp_plot():
-    fig = plt.figure("test")
-    ax = fig.add_subplot(121)
-    ax.imshow(sourceImage)
-    for item in sourceShape:
-        print(item)
-        rect = plt.Rectangle((item[0], item[1]),
-                             item[2], -item[3], color='r', fill=False)
-        ax.add_patch(rect)
-    ax.plot(sourcePoints[:, 0], sourcePoints[:, 1], "r.")
-    bx = fig.add_subplot(122)
-    bx.imshow(destImage)
-    for item in destShape:
-        print(item)
-        rect = plt.Rectangle((item[0], item[1]),
-                             item[2], -item[3], color='r', fill=False)
-        bx.add_patch(rect)
-    bx.plot(destPoints[:, 0], destPoints[:, 1], "r.")
-    plt.show()
+# def tmp_plot():
+#     fig = plt.figure("test")
+#     ax = fig.add_subplot(121)
+#     ax.imshow(sourceImage)
+#     for item in sourceShape:
+#         print(item)
+#         rect = plt.Rectangle((item[0], item[1]),
+#                              item[2], -item[3], color='r', fill=False)
+#         ax.add_patch(rect)
+#     ax.plot(sourcePoints[:, 0], sourcePoints[:, 1], "r.")
+#     bx = fig.add_subplot(122)
+#     bx.imshow(destImage)
+#     for item in destShape:
+#         print(item)
+#         rect = plt.Rectangle((item[0], item[1]),
+#                              item[2], -item[3], color='r', fill=False)
+#         bx.add_patch(rect)
+#     bx.plot(destPoints[:, 0], destPoints[:, 1], "r.")
+#     plt.show()
 
 def transformationFormPoints(sourcePoints, destPoints):
     sourcePoints = np.asmatrix(sourcePoints, dtype=np.float32)
@@ -96,9 +98,9 @@ if __name__ == "__main__":
     sourcePoints, _ = getFaceLandMark(sourceImage, sourceRects[0], modelFile)
     destPoints, _ = getFaceLandMark(destImage, destRects[0], modelFile)
     p_matrix = transformationFormPoints(sourcePoints, destPoints)
+    print(p_matrix)
     outputSize = destImage.shape
     outputMatrix = np.zeros(outputSize, dtype=destImage.dtype)
-    print(destImage.dtype)
     cv2.warpAffine(src=sourceImage, dst=outputMatrix, M=p_matrix[:2],
                    dsize=(outputSize[1], outputSize[0]),
                    borderMode=cv2.BORDER_TRANSPARENT, flags=cv2.WARP_INVERSE_MAP)
