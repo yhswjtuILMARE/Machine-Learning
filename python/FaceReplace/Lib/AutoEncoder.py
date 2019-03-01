@@ -173,7 +173,7 @@ class ConvolutionalAutoencoder:
         return self._sess.run(self._reconstruct, feed_dict={self._hidden: hidden})
     def train(self):
         self._sess.run(tf.global_variables_initializer())
-        mnist = input_data.read_data_sets("/home/ilmare/dataSet/mnist", one_hot=True)
+        mnist = input_data.read_data_sets(r"F:\tensorflow\MNIST_DATA", one_hot=True)
         n_examples = int(mnist.train.num_examples)
         for step in range(self._max_step):
             avg_cost = 0
@@ -186,24 +186,22 @@ class ConvolutionalAutoencoder:
                 if (idx % 50) == 0:
                     print("cost: %.3f" % loss, " batch: ", idx)
             print("avg_cost: %.3f" % avg_cost, " step: ", step)
-        tf.train.Saver().save(self._sess, save_path="/home/ilmare/Desktop/FaceReplace/model/cnn-autoencoder/cnn")
+        tf.train.Saver().save(self._sess, save_path="F:/tensorflow/automodel/model1/encoder")
     def load_model(self):
-        tf.train.Saver().restore(self._sess, tf.train.latest_checkpoint("/home/ilmare/Desktop/FaceReplace/model/cnn-autoencoder/"))
-        mnist = input_data.read_data_sets("/home/ilmare/dataSet/mnist", one_hot=True)
-        source = np.reshape(mnist.test.images[102], [1, 28, 28, 1])
+        tf.train.Saver().restore(self._sess, tf.train.latest_checkpoint("F:/tensorflow/automodel/model1/"))
+        mnist = input_data.read_data_sets(r"F:\tensorflow\MNIST_DATA", one_hot=True)
+        source = np.reshape(mnist.test.images[15], [1, 28, 28, 1])
         dest = self.get_reconstruct(source)
         source = np.reshape(source, [28, 28])
         dest = np.reshape(dest, [28, 28])
         print(source.shape, dest.shape)
-        # fig = plt.figure("test")
-        # ax = fig.add_subplot(121)
-        # ax.imshow(source)
-        # bx = fig.add_subplot(122)
-        # bx.imshow(dest)
-        # plt.show()
-        cv2.imshow("lalal", dest)
-        cv2.waitKey(0)
-        cv2.destroyAllWindows()
+        fig = plt.figure("test")
+        ax = fig.add_subplot(121)
+        ax.imshow(source)
+        bx = fig.add_subplot(122)
+        bx.imshow(dest)
+        plt.show()
+
 
 
 class AGNAutoEncoder:
