@@ -9,6 +9,7 @@ import requests
 from PIL import Image
 import os
 import re
+import cv2
 
 totalCount = 0
 pre_path = r"F:/tensorflow/automodel/scrawler/img/"
@@ -74,11 +75,22 @@ def parse_page(fronted_Url, pageNum=1):
             return
 
 if __name__ == "__main__":
-    for i in range(10):
-        return_mat = get_title_list(i * 50)
-        if return_mat is None:
-            continue
-        for (title, link, repNum), page in zip(return_mat, range(len(return_mat))):
-            if repNum <= 3000:
-                print("===>", title, ", current page: ", i + 1, ", current item: ", page)
-                parse_page(link)
+    vc = cv2.VideoCapture(r"F:\tensorflow\automodel\scrawler\vedio\source.mp4")
+    rval = vc.isOpened()
+    c = 0
+    while rval:
+        rval, frame = vc.read()
+        if rval:
+            cv2.imwrite("F:/tensorflow/automodel/scrawler/vedio/{0}.jpg".format(c), frame)
+            c += 1
+        else:
+            break
+    vc.release()
+    # for i in range(10):
+    #     return_mat = get_title_list(i * 50)
+    #     if return_mat is None:
+    #         continue
+    #     for (title, link, repNum), page in zip(return_mat, range(len(return_mat))):
+    #         if repNum <= 3000:
+    #             print("===>", title, ", current page: ", i + 1, ", current item: ", page)
+    #             parse_page(link)
