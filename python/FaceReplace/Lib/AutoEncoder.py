@@ -37,7 +37,7 @@ class AutoEncoder:
         self._batch_size = batch_size
         self.define_network()
     def define_network(self):
-        self._x = tf.placeholder(shape=[None, 64, 64, self._channel], dtype=tf.float32)
+        self._x = tf.placeholder(shape=[None, 128, 128, self._channel], dtype=tf.float32)
         def define_encoder():
             with tf.name_scope("conv1"):
                 conv1_kernal = tf.Variable(initial_value=tf.truncated_normal(
@@ -173,7 +173,7 @@ class ConvolutionalAutoencoder:
         return self._sess.run(self._reconstruct, feed_dict={self._hidden: hidden})
     def train(self):
         self._sess.run(tf.global_variables_initializer())
-        mnist = input_data.read_data_sets(r"F:\tensorflow\MNIST_DATA", one_hot=True)
+        mnist = input_data.read_data_sets(r"/home/ilmare/dataSet/mnist", one_hot=True)
         n_examples = int(mnist.train.num_examples)
         for step in range(self._max_step):
             avg_cost = 0
@@ -186,10 +186,10 @@ class ConvolutionalAutoencoder:
                 if (idx % 50) == 0:
                     print("cost: %.3f" % loss, " batch: ", idx)
             print("avg_cost: %.3f" % avg_cost, " step: ", step)
-        tf.train.Saver().save(self._sess, save_path="F:/tensorflow/automodel/model1/encoder")
+        tf.train.Saver().save(self._sess, save_path="/home/ilmare/Desktop/FaceReplace/model/encoder")
     def load_model(self):
-        tf.train.Saver().restore(self._sess, tf.train.latest_checkpoint("F:/tensorflow/automodel/model1/"))
-        mnist = input_data.read_data_sets(r"F:\tensorflow\MNIST_DATA", one_hot=True)
+        tf.train.Saver().restore(self._sess, tf.train.latest_checkpoint("/home/ilmare/Desktop/FaceReplace/model/"))
+        mnist = input_data.read_data_sets(r"/home/ilmare/dataSet/mnist", one_hot=True)
         source = np.reshape(mnist.test.images[15], [1, 28, 28, 1])
         dest = self.get_reconstruct(source)
         source = np.reshape(source, [28, 28])

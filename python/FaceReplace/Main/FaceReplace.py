@@ -43,25 +43,25 @@ def getFaceLandMark(img, rect, modelFile):
         landMarkPoints.append([p.x, p.y])
     return np.asarray(landMarkPoints, dtype=np.float32), points
 
-# def tmp_plot():
-#     fig = plt.figure("test")
-#     ax = fig.add_subplot(121)
-#     ax.imshow(sourceImage)
-#     for item in sourceShape:
-#         print(item)
-#         rect = plt.Rectangle((item[0], item[1]),
-#                              item[2], -item[3], color='r', fill=False)
-#         ax.add_patch(rect)
-#     ax.plot(sourcePoints[:, 0], sourcePoints[:, 1], "r.")
-#     bx = fig.add_subplot(122)
-#     bx.imshow(destImage)
-#     for item in destShape:
-#         print(item)
-#         rect = plt.Rectangle((item[0], item[1]),
-#                              item[2], -item[3], color='r', fill=False)
-#         bx.add_patch(rect)
-#     bx.plot(destPoints[:, 0], destPoints[:, 1], "r.")
-#     plt.show()
+def tmp_plot():
+    fig = plt.figure("test")
+    ax = fig.add_subplot(121)
+    ax.imshow(sourceImage)
+    for item in sourceShape:
+        print(item)
+        rect = plt.Rectangle((item[0], item[1]),
+                             item[2], -item[3], color='r', fill=False)
+        ax.add_patch(rect)
+    ax.plot(sourcePoints[:, 0], sourcePoints[:, 1], "r.")
+    bx = fig.add_subplot(122)
+    bx.imshow(destImage)
+    for item in destShape:
+        print(item)
+        rect = plt.Rectangle((item[0], item[1]),
+                             item[2], -item[3], color='r', fill=False)
+        bx.add_patch(rect)
+    bx.plot(destPoints[:, 0], destPoints[:, 1], "r.")
+    plt.show()
 
 def transformationFormPoints(sourcePoints, destPoints):
     sourcePoints = np.asmatrix(sourcePoints, dtype=np.float32)
