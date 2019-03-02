@@ -151,6 +151,7 @@ if __name__ == '__main__':
         points1 = allPoints[i];
         eyecornerSrc = [allPoints[i][36], allPoints[i][45]];
         tform = similarityTransform(eyecornerSrc, eyecornerDst);
+        print(tform)
         img = np.zeros((h, w, 3), dtype=np.float32)
         img = cv2.warpAffine(np.float32(images[i]) / 255.0, tform, (w, h));
         points2 = np.reshape(np.array(points1), (68, 1, 2));

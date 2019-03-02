@@ -73,7 +73,7 @@ class AutoEncoder:
                 w2 = tf.Variable(initial_value=xavier_init(1024, tmp_dim))
                 b2 = tf.Variable(initial_value=tf.zeros([tmp_dim], dtype=tf.float32))
                 link2 = tf.nn.bias_add(tf.matmul(link1, w2), b2)
-                link2 = tf.reshape(link2, [-1, 4, 4, 1024])
+                link2 = tf.reshape(link2, [-1, 8, 8, 1024])
             with tf.name_scope("upscale1"):
                 upscale1_kernal = tf.Variable(initial_value=tf.truncated_normal(
                     [3, 3, 1024, 2048], stddev=0.1, dtype=tf.float32))
@@ -296,8 +296,7 @@ class AGNAutoEncoder:
 
 
 if __name__ == "__main__":
-    obj = ConvolutionalAutoencoder(0.01, 20, 64)
-    obj.load_model()
+    obj = AutoEncoder(0.01, 20, 64)
     # obj = AGNAutoEncoder(784, 200, scale=0.01,max_step=100,
     #                      learning_rate=0.001)
     # obj.load_model()

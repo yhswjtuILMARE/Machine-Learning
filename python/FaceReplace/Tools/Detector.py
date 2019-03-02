@@ -7,8 +7,30 @@ from dlib import shape_predictor as predictor
 from dlib import get_frontal_face_detector as detector
 import cv2
 import os
+from  matplotlib import pyplot as plt
+import math
+import numpy as np
 
 modelFile = r"/home/ilmare/Desktop/FaceReplace/shape_predictor_68_face_landmarks.dat"
+
+def similarityTransform(inPoints, outPoints):
+    s60 = math.sin(60 * math.pi / 180);
+    c60 = math.cos(60 * math.pi / 180);
+
+    inPts = np.copy(inPoints).tolist();
+    outPts = np.copy(outPoints).tolist();
+
+    xin = c60 * (inPts[0][0] - inPts[1][0]) - s60 * (inPts[0][1] - inPts[1][1]) + inPts[1][0];
+    yin = s60 * (inPts[0][0] - inPts[1][0]) + c60 * (inPts[0][1] - inPts[1][1]) + inPts[1][1];
+
+    inPts.append([np.int(xin), np.int(yin)]);
+
+    xout = c60 * (outPts[0][0] - outPts[1][0]) - s60 * (outPts[0][1] - outPts[1][1]) + outPts[1][0];
+    yout = s60 * (outPts[0][0] - outPts[1][0]) + c60 * (outPts[0][1] - outPts[1][1]) + outPts[1][1];
+
+    outPts.append([np.int(xout), np.int(yout)]);
+
+    return cv2.getAffineTransform(np.array(inPts, dtype=np.float32), np.array(outPts, dtype=np.float32))
 
 class PhotoParser:
     def __init__(self, videoPath, savePath, modelFile, trainPath, destShape):
@@ -33,6 +55,9 @@ class PhotoParser:
         vc.release()
     def detectorPhotoFace(self):
         detectorObj = detector()
+        predictorObj = predictor(self._modelFile)
+        imageShape = (640, 360)
+        destEyePoint = [(316, 92), (385, 92)]
         try:
             fileList = os.listdir(self._savePath)
             for file, idx in zip(fileList, range(len(fileList))):
@@ -42,6 +67,11 @@ class PhotoParser:
                 if len(rects) > 1 or len(rects) == 0:
                     print(filePath)
                     continue
+                # img = self.__warpPhoto(predictorObj, destEyePoint, imageShape, img, rect[0])
+                # rects = detectorObj(img, 1)
+                # if len(rects) > 1 or len(rects) == 0:
+                #     print(filePath)
+                #     continue
                 rect = rects[0]
                 left, top, width, height = rect.left(), rect.top(), rect.right() - rect.left(), rect.bottom() - rect.top()
                 img = img[top:top + height, left:left + width, :]
@@ -51,6 +81,11 @@ class PhotoParser:
                     print("current index: ", idx)
         except Exception as e:
             print(e)
+    def __warpPhoto(self, predictorObj , destEyePoint, imageShape, img, rect):
+        points = predictorObj(img, rect)
+        inPts = [(points.parts()[36].x, points.parts()[36].y), (points.parts()[45].x, points.parts()[45].y)]
+        warpMatrix = similarityTransform(inPts, destEyePoint)
+        return cv2.warpAffine(img, warpMatrix, dsize=imageShape)
     def __resizePhoto(self, img):
         try:
             height = img.shape[0]
@@ -73,11 +108,11 @@ class PhotoParser:
             return None
 
 
+
 if __name__ == "__main__":
     videoPath = r"/home/ilmare/Desktop/FaceReplace/data/video/source.mp4"
     savePath = r"/home/ilmare/Desktop/FaceReplace/data/img/"
-    trainPath = r"/home/ilmare/Desktop/FaceReplace/data/train/"
+    trainPath = r"/home/ilmare/Desktop/FaceReplace/data/compare/"
     obj = PhotoParser(videoPath, savePath, modelFile, trainPath, (128, 128))
     obj.detectorPhotoFace()
-
 
