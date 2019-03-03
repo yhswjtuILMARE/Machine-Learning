@@ -30,8 +30,6 @@ class ImageTrainObject:
             return_mat.append(img)
         return np.array(return_mat, dtype=np.float32)
 
-
-
 if __name__ == "__main__":
     filePath = r"/home/ilmare/Desktop/FaceReplace/data/video/trainImg"
     batchSize = 64
