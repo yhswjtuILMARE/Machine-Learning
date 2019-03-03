@@ -9,7 +9,8 @@ import sklearn
 from tensorflow.examples.tutorials.mnist import input_data
 from matplotlib import pyplot as plt
 import cv2
-from tensorflow.python.client import device_lib
+from Tools.DataObject import ImageTrainObject
+import datetime
 
 def xavier_init(input_count, output_count, constant=1):
     low = -constant * np.sqrt(6.0 / (input_count + output_count))
@@ -35,7 +36,9 @@ class AutoEncoder:
         self._learning_rate = learning_rate
         self._max_step = max_step
         self._batch_size = batch_size
+        self._sess = tf.Session()
         self.define_network()
+        self.define_loss()
     def define_network(self):
         self._x = tf.placeholder(shape=[None, 128, 128, self._channel], dtype=tf.float32)
         def define_encoder():
@@ -82,40 +85,91 @@ class AutoEncoder:
                 upscale1 = tf.nn.leaky_relu(tf.nn.bias_add(h_upscale1, upscale1_b), alpha=0.1)
                 upscale1 = tf.depth_to_space(upscale1, 2)
                 self._hidden = upscale1
-        def define_decoder():
-            with tf.name_scope("upscale2"):
+        def define_decoder1():
+            with tf.name_scope("upscale21"):
                 upscale2_kernal = tf.Variable(initial_value=tf.truncated_normal(
                     [3,3,512,1024], stddev=0.1, dtype=tf.float32))
                 upscale2_b = tf.Variable(initial_value=tf.zeros([1024], dtype=tf.float32))
                 h_upscale2 = tf.nn.conv2d(self._hidden, upscale2_kernal, strides=[1,1,1,1], padding="SAME")
                 upscale2 = tf.nn.leaky_relu(tf.nn.bias_add(h_upscale2, upscale2_b), alpha=0.1)
                 upscale2 = tf.depth_to_space(upscale2, 2)
-            with tf.name_scope("upscale3"):
+            with tf.name_scope("upscale31"):
                 upscale3_kernal = tf.Variable(initial_value=tf.truncated_normal(
                     [3,3,256,512], stddev=0.1, dtype=tf.float32))
                 upscale3_b = tf.Variable(initial_value=tf.zeros([512], dtype=tf.float32))
                 h_upscale3 = tf.nn.conv2d(upscale2, upscale3_kernal, strides=[1,1,1,1], padding="SAME")
                 upscale3 = tf.nn.leaky_relu(tf.nn.bias_add(h_upscale3, upscale3_b), alpha=0.1)
                 upscale3 = tf.depth_to_space(upscale3, 2)
-            with tf.name_scope("upscale4"):
+            with tf.name_scope("upscale41"):
                 upscale4_kernal = tf.Variable(initial_value=tf.truncated_normal(
                     [3,3,128,256], stddev=0.1, dtype=tf.float32))
                 upscale4_b = tf.Variable(initial_value=tf.zeros([256], dtype=tf.float32))
                 h_upscale4 = tf.nn.conv2d(upscale3, upscale4_kernal, strides=[1,1,1,1], padding="SAME")
                 upscale4 = tf.nn.leaky_relu(tf.nn.bias_add(h_upscale4, upscale4_b), alpha=0.1)
                 upscale4 = tf.depth_to_space(upscale4, 2)
-            with tf.name_scope("conv5"):
+            with tf.name_scope("conv51"):
                 conv5_kernal = tf.Variable(initial_value=tf.truncated_normal(
                     [5, 5, 64, self._channel], stddev=0.1, dtype=tf.float32))
                 h_conv5 = tf.nn.conv2d(upscale4, conv5_kernal, strides=[1, 1, 1, 1], padding="SAME")
                 conv5_b = tf.Variable(initial_value=tf.zeros([self._channel], dtype=tf.float32))
                 conv5 = tf.nn.sigmoid(tf.nn.bias_add(h_conv5, conv5_b))
-                self._reconstruct = conv5
+                self._reconstruct1 = conv5
+        # def define_decoder2():
+        #     with tf.name_scope("upscale22"):
+        #         upscale2_kernal = tf.Variable(initial_value=tf.truncated_normal(
+        #             [3,3,512,1024], stddev=0.1, dtype=tf.float32))
+        #         upscale2_b = tf.Variable(initial_value=tf.zeros([1024], dtype=tf.float32))
+        #         h_upscale2 = tf.nn.conv2d(self._hidden, upscale2_kernal, strides=[1,1,1,1], padding="SAME")
+        #         upscale2 = tf.nn.leaky_relu(tf.nn.bias_add(h_upscale2, upscale2_b), alpha=0.1)
+        #         upscale2 = tf.depth_to_space(upscale2, 2)
+        #     with tf.name_scope("upscale32"):
+        #         upscale3_kernal = tf.Variable(initial_value=tf.truncated_normal(
+        #             [3,3,256,512], stddev=0.1, dtype=tf.float32))
+        #         upscale3_b = tf.Variable(initial_value=tf.zeros([512], dtype=tf.float32))
+        #         h_upscale3 = tf.nn.conv2d(upscale2, upscale3_kernal, strides=[1,1,1,1], padding="SAME")
+        #         upscale3 = tf.nn.leaky_relu(tf.nn.bias_add(h_upscale3, upscale3_b), alpha=0.1)
+        #         upscale3 = tf.depth_to_space(upscale3, 2)
+        #     with tf.name_scope("upscale42"):
+        #         upscale4_kernal = tf.Variable(initial_value=tf.truncated_normal(
+        #             [3,3,128,256], stddev=0.1, dtype=tf.float32))
+        #         upscale4_b = tf.Variable(initial_value=tf.zeros([256], dtype=tf.float32))
+        #         h_upscale4 = tf.nn.conv2d(upscale3, upscale4_kernal, strides=[1,1,1,1], padding="SAME")
+        #         upscale4 = tf.nn.leaky_relu(tf.nn.bias_add(h_upscale4, upscale4_b), alpha=0.1)
+        #         upscale4 = tf.depth_to_space(upscale4, 2)
+        #     with tf.name_scope("conv52"):
+        #         conv5_kernal = tf.Variable(initial_value=tf.truncated_normal(
+        #             [5, 5, 64, self._channel], stddev=0.1, dtype=tf.float32))
+        #         h_conv5 = tf.nn.conv2d(upscale4, conv5_kernal, strides=[1, 1, 1, 1], padding="SAME")
+        #         conv5_b = tf.Variable(initial_value=tf.zeros([self._channel], dtype=tf.float32))
+        #         conv5 = tf.nn.sigmoid(tf.nn.bias_add(h_conv5, conv5_b))
+        #         self._reconstruct2 = conv5
         define_encoder()
-        define_decoder()
+        define_decoder1()
+        # define_decoder2()
+    @property
+    def reconstruct1(self, X):
+        return self._sess.run(self._reconstruct1, feed_dict={self.x: X})
+    # @property
+    # def reconstruct2(self, X):
+    #     return self._sess.run(self._reconstruct2, feed_dict={self.x: X})
     def define_loss(self):
-        self.loss = tf.reduce_mean(tf.pow(tf.subtract(self._x, self._reconstruct), 2))
-        self._optimizer = tf.train.AdamOptimizer(self._learning_rate).minimize(self._loss)
+        self._loss1 = tf.reduce_mean(tf.pow(tf.subtract(self._x, self._reconstruct1), 2))
+        self._optimizer1 = tf.train.AdamOptimizer(self._learning_rate).minimize(self._loss1)
+        # self.loss2 = tf.reduce_mean(tf.pow(tf.subtract(self._x, self._reconstruct2), 2))
+        # self._optimizer2 = tf.train.AdamOptimizer(self._learning_rate).minimize(self._loss2)
+    def train(self, dataPath):
+        imgObj = ImageTrainObject(dataPath, self._batch_size)
+        count = imgObj.DataCount // self._batch_size
+        self._sess.run(tf.global_variables_initializer())
+        for step in range(self._max_step):
+            avg_cost = 0
+            for time in range(count):
+                train = imgObj.generateBatch()
+                _, loss = self._sess.run([self._optimizer1, self._loss1], feed_dict={self._x: train})
+                avg_cost += (loss / count)
+                print(datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"), "- cost: %.3f" % loss, " time: ", time)
+            print(datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"), "- avg_cost: %.3f" % avg_cost, " step: ", step)
+            # tf.train.Saver().save(self._sess, save_path="/home/ilmare/Desktop/FaceReplace/model/encoder")
 
 
 class ConvolutionalAutoencoder:

@@ -2,8 +2,10 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="8691a5a0-0753-457e-8781-cce0759f0888" name="Default Changelist" comment="">
+      <change afterPath="$PROJECT_DIR$/Tools/DataObject.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Lib/AutoEncoder.py" beforeDir="false" afterPath="$PROJECT_DIR$/Lib/AutoEncoder.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Main/FaceAverage.py" beforeDir="false" afterPath="$PROJECT_DIR$/Main/FaceAverage.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Main/FaceReplace.py" beforeDir="false" afterPath="$PROJECT_DIR$/Main/FaceReplace.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Tools/Detector.py" beforeDir="false" afterPath="$PROJECT_DIR$/Tools/Detector.py" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
@@ -16,38 +18,39 @@
     <session id="-1691296174">
       <usages-collector id="statistics.lifecycle.project">
         <counts>
-          <entry key="project.closed" value="10" />
+          <entry key="project.closed" value="11" />
           <entry key="project.open.time.1" value="1" />
           <entry key="project.open.time.11" value="4" />
           <entry key="project.open.time.12" value="3" />
+          <entry key="project.open.time.15" value="1" />
           <entry key="project.open.time.2" value="1" />
           <entry key="project.open.time.3" value="1" />
           <entry key="project.open.time.4" value="1" />
-          <entry key="project.opened" value="11" />
+          <entry key="project.opened" value="12" />
         </counts>
       </usages-collector>
       <usages-collector id="statistics.file.extensions.open">
         <counts>
           <entry key="jpg" value="1" />
           <entry key="log" value="1" />
-          <entry key="py" value="23" />
+          <entry key="py" value="29" />
         </counts>
       </usages-collector>
       <usages-collector id="statistics.file.types.open">
         <counts>
           <entry key="Image" value="1" />
           <entry key="PLAIN_TEXT" value="1" />
-          <entry key="Python" value="23" />
+          <entry key="Python" value="29" />
         </counts>
       </usages-collector>
       <usages-collector id="statistics.file.extensions.edit">
         <counts>
-          <entry key="py" value="22683" />
+          <entry key="py" value="25147" />
         </counts>
       </usages-collector>
       <usages-collector id="statistics.file.types.edit">
         <counts>
-          <entry key="Python" value="22683" />
+          <entry key="Python" value="25147" />
         </counts>
       </usages-collector>
     </session>
@@ -87,11 +90,11 @@
   </component>
   <component name="FileEditorManager">
     <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
-      <file pinned="false" current-in-tab="false">
+      <file pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/Lib/AutoEncoder.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="-684">
-              <caret line="113" selection-start-line="113" selection-end-line="113" />
+            <state relative-caret-position="252">
+              <caret line="158" column="32" selection-start-line="158" selection-start-column="32" selection-end-line="158" selection-end-column="32" />
               <folding>
                 <element signature="e#43#66#0" expanded="true" />
               </folding>
@@ -100,22 +103,22 @@
         </entry>
       </file>
       <file pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/Tools/PhotoScrawler.py">
+        <entry file="file://$PROJECT_DIR$/Main/FaceReplace.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="480">
-              <caret line="89" column="26" selection-start-line="89" selection-start-column="26" selection-end-line="89" selection-end-column="26" />
+            <state relative-caret-position="234">
+              <caret line="13" column="35" selection-start-line="13" selection-start-column="35" selection-end-line="13" selection-end-column="35" />
               <folding>
-                <element signature="e#42#71#0" expanded="true" />
+                <element signature="e#42#81#0" expanded="true" />
               </folding>
             </state>
           </provider>
         </entry>
       </file>
-      <file pinned="false" current-in-tab="true">
+      <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/Tools/Detector.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="282">
-              <caret line="65" column="40" selection-start-line="65" selection-start-column="40" selection-end-line="65" selection-end-column="40" />
+            <state relative-caret-position="270">
+              <caret line="15" column="85" lean-forward="true" selection-start-line="15" selection-end-line="15" selection-end-column="85" />
               <folding>
                 <element signature="e#42#87#0" expanded="true" />
               </folding>
@@ -124,12 +127,12 @@
         </entry>
       </file>
       <file pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/Main/FaceAverage.py">
+        <entry file="file://$PROJECT_DIR$/Tools/DataObject.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="174">
-              <caret line="153" column="19" selection-start-line="153" selection-start-column="19" selection-end-line="153" selection-end-column="19" />
+            <state relative-caret-position="630">
+              <caret line="35" column="69" selection-start-line="35" selection-start-column="69" selection-end-line="35" selection-end-column="69" />
               <folding>
-                <element signature="e#43#52#0" expanded="true" />
+                <element signature="e#42#51#0" expanded="true" />
               </folding>
             </state>
           </provider>
@@ -153,13 +156,14 @@
         <option value="$PROJECT_DIR$/Main/test1.py" />
         <option value="$PROJECT_DIR$/Main/test.py" />
         <option value="$PROJECT_DIR$/Main/__init__.py" />
-        <option value="$PROJECT_DIR$/Main/FaceReplace.py" />
         <option value="$PROJECT_DIR$/scrawler/PhotoScraler.py" />
         <option value="$PROJECT_DIR$/Lib/Detector.py" />
         <option value="$PROJECT_DIR$/Tools/PhotoScrawler.py" />
-        <option value="$PROJECT_DIR$/Lib/AutoEncoder.py" />
         <option value="$PROJECT_DIR$/Main/FaceAverage.py" />
         <option value="$PROJECT_DIR$/Tools/Detector.py" />
+        <option value="$PROJECT_DIR$/Tools/DataObject.py" />
+        <option value="$PROJECT_DIR$/Main/FaceReplace.py" />
+        <option value="$PROJECT_DIR$/Lib/AutoEncoder.py" />
       </list>
     </option>
   </component>
@@ -177,7 +181,6 @@
       <foldersAlwaysOnTop value="true" />
     </navigator>
     <panes>
-      <pane id="Scope" />
       <pane id="ProjectPane">
         <subPane>
           <expand>
@@ -204,6 +207,7 @@
           <select />
         </subPane>
       </pane>
+      <pane id="Scope" />
     </panes>
   </component>
   <component name="PropertiesComponent">
@@ -222,7 +226,7 @@
       </list>
     </option>
   </component>
-  <component name="RunManager" selected="Python.Detector (1)">
+  <component name="RunManager" selected="Python.FaceReplace">
     <configuration name="AutoEncoder" type="PythonConfigurationType" factoryName="Python" temporary="true">
       <module name="FaceReplace" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -236,6 +240,27 @@
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
       <option name="SCRIPT_NAME" value="$PROJECT_DIR$/Lib/AutoEncoder.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
+    <configuration name="DataObject" type="PythonConfigurationType" factoryName="Python" temporary="true">
+      <module name="FaceReplace" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/Tools" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/Tools/DataObject.py" />
       <option name="PARAMETERS" value="" />
       <option name="SHOW_COMMAND_LINE" value="false" />
       <option name="EMULATE_TERMINAL" value="false" />
@@ -265,28 +290,7 @@
       <option name="INPUT_FILE" value="" />
       <method v="2" />
     </configuration>
-    <configuration name="Detector" type="PythonConfigurationType" factoryName="Python" temporary="true">
-      <module name="FaceReplace" />
-      <option name="INTERPRETER_OPTIONS" value="" />
-      <option name="PARENT_ENVS" value="true" />
-      <envs>
-        <env name="PYTHONUNBUFFERED" value="1" />
-      </envs>
-      <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/Lib" />
-      <option name="IS_MODULE_SDK" value="true" />
-      <option name="ADD_CONTENT_ROOTS" value="true" />
-      <option name="ADD_SOURCE_ROOTS" value="true" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/Lib/Detector.py" />
-      <option name="PARAMETERS" value="" />
-      <option name="SHOW_COMMAND_LINE" value="false" />
-      <option name="EMULATE_TERMINAL" value="false" />
-      <option name="MODULE_MODE" value="false" />
-      <option name="REDIRECT_INPUT" value="false" />
-      <option name="INPUT_FILE" value="" />
-      <method v="2" />
-    </configuration>
-    <configuration name="FaceAverage" type="PythonConfigurationType" factoryName="Python" temporary="true">
+    <configuration name="FaceReplace" type="PythonConfigurationType" factoryName="Python" temporary="true">
       <module name="FaceReplace" />
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
@@ -298,7 +302,7 @@
       <option name="IS_MODULE_SDK" value="true" />
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/Main/FaceAverage.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/Main/FaceReplace.py" />
       <option name="PARAMETERS" value="" />
       <option name="SHOW_COMMAND_LINE" value="false" />
       <option name="EMULATE_TERMINAL" value="false" />
@@ -329,19 +333,19 @@
       <method v="2" />
     </configuration>
     <list>
-      <item itemvalue="Python.AutoEncoder" />
-      <item itemvalue="Python.Detector" />
       <item itemvalue="Python.PhotoScrawler" />
       <item itemvalue="Python.Detector (1)" />
-      <item itemvalue="Python.FaceAverage" />
+      <item itemvalue="Python.DataObject" />
+      <item itemvalue="Python.FaceReplace" />
+      <item itemvalue="Python.AutoEncoder" />
     </list>
     <recent_temporary>
       <list>
-        <item itemvalue="Python.Detector (1)" />
-        <item itemvalue="Python.FaceAverage" />
+        <item itemvalue="Python.FaceReplace" />
         <item itemvalue="Python.AutoEncoder" />
+        <item itemvalue="Python.DataObject" />
+        <item itemvalue="Python.Detector (1)" />
         <item itemvalue="Python.PhotoScrawler" />
-        <item itemvalue="Python.Detector" />
       </list>
     </recent_temporary>
   </component>
@@ -360,14 +364,13 @@
   </component>
   <component name="ToolWindowManager">
     <frame x="64" y="-11" width="1857" height="1092" extended-state="6" />
-    <editor active="true" />
     <layout>
       <window_info content_ui="combo" id="Project" order="0" visible="true" weight="0.139738" />
       <window_info id="Structure" order="1" side_tool="true" weight="0.25" />
       <window_info id="Favorites" order="2" side_tool="true" />
       <window_info anchor="bottom" id="Message" order="0" />
       <window_info anchor="bottom" id="Find" order="1" weight="0.32914045" />
-      <window_info anchor="bottom" id="Run" order="2" weight="0.2672956" />
+      <window_info anchor="bottom" id="Run" order="2" weight="0.38784066" />
       <window_info anchor="bottom" id="Debug" order="3" weight="0.3991684" />
       <window_info anchor="bottom" id="Cvs" order="4" weight="0.25" />
       <window_info anchor="bottom" id="Inspection" order="5" weight="0.4" />
@@ -392,15 +395,9 @@
       <provider selected="true" editor-type-id="text-editor" />
     </entry>
     <entry file="file://$USER_HOME$/AppData/Local/Programs/Python/Python35/Lib/site-packages/selenium/webdriver/remote/webdriver.py" />
-    <entry file="file://$PROJECT_DIR$/scrawler/ghostdriver.log">
-      <provider selected="true" editor-type-id="text-editor" />
-    </entry>
-    <entry file="file://$PROJECT_DIR$/scrawler/__init__.py">
-      <provider selected="true" editor-type-id="text-editor" />
-    </entry>
-    <entry file="file://$PROJECT_DIR$/scrawler/geckodriver.log">
-      <provider selected="true" editor-type-id="text-editor" />
-    </entry>
+    <entry file="file://$PROJECT_DIR$/scrawler/ghostdriver.log" />
+    <entry file="file://$PROJECT_DIR$/scrawler/__init__.py" />
+    <entry file="file://$PROJECT_DIR$/scrawler/geckodriver.log" />
     <entry file="file://$USER_HOME$/.PyCharmCE2018.2/system/python_stubs/-1247971764/dlib/shape_predictor.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="199">
@@ -408,28 +405,14 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/scrawler/PhotoScraler.py">
-      <provider selected="true" editor-type-id="text-editor" />
-    </entry>
-    <entry file="file://$PROJECT_DIR$/Lib/Detector.py">
-      <provider selected="true" editor-type-id="text-editor" />
-    </entry>
-    <entry file="file://$PROJECT_DIR$/Main/FaceReplace.py">
+    <entry file="file://$PROJECT_DIR$/scrawler/PhotoScraler.py" />
+    <entry file="file://$PROJECT_DIR$/Lib/Detector.py" />
+    <entry file="file://$PROJECT_DIR$/Tools/PhotoScrawler.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="-133">
-          <caret line="13" column="4" selection-start-line="13" selection-start-column="4" selection-end-line="13" selection-end-column="4" />
+        <state relative-caret-position="480">
+          <caret line="89" column="26" selection-start-line="89" selection-start-column="26" selection-end-line="89" selection-end-column="26" />
           <folding>
-            <element signature="e#43#61#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/Lib/AutoEncoder.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="-684">
-          <caret line="113" selection-start-line="113" selection-end-line="113" />
-          <folding>
-            <element signature="e#43#66#0" expanded="true" />
+            <element signature="e#42#71#0" expanded="true" />
           </folding>
         </state>
       </provider>
@@ -444,22 +427,42 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/Tools/PhotoScrawler.py">
+    <entry file="file://$PROJECT_DIR$/Tools/Detector.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="480">
-          <caret line="89" column="26" selection-start-line="89" selection-start-column="26" selection-end-line="89" selection-end-column="26" />
+        <state relative-caret-position="270">
+          <caret line="15" column="85" lean-forward="true" selection-start-line="15" selection-end-line="15" selection-end-column="85" />
           <folding>
-            <element signature="e#42#71#0" expanded="true" />
+            <element signature="e#42#87#0" expanded="true" />
           </folding>
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/Tools/Detector.py">
+    <entry file="file://$PROJECT_DIR$/Tools/DataObject.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="282">
-          <caret line="65" column="40" selection-start-line="65" selection-start-column="40" selection-end-line="65" selection-end-column="40" />
+        <state relative-caret-position="630">
+          <caret line="35" column="69" selection-start-line="35" selection-start-column="69" selection-end-line="35" selection-end-column="69" />
           <folding>
-            <element signature="e#42#87#0" expanded="true" />
+            <element signature="e#42#51#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/Main/FaceReplace.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="234">
+          <caret line="13" column="35" selection-start-line="13" selection-start-column="35" selection-end-line="13" selection-end-column="35" />
+          <folding>
+            <element signature="e#42#81#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/Lib/AutoEncoder.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="252">
+          <caret line="158" column="32" selection-start-line="158" selection-start-column="32" selection-end-line="158" selection-end-column="32" />
+          <folding>
+            <element signature="e#43#66#0" expanded="true" />
           </folding>
         </state>
       </provider>
