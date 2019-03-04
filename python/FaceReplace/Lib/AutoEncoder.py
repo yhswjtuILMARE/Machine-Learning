@@ -146,9 +146,8 @@ class AutoEncoder:
         define_encoder()
         define_decoder1()
         # define_decoder2()
-    @property
     def reconstruct1(self, X):
-        return self._sess.run(self._reconstruct1, feed_dict={self.x: X})
+        return self._sess.run(self._reconstruct1, feed_dict={self._x: X})
     # @property
     # def reconstruct2(self, X):
     #     return self._sess.run(self._reconstruct2, feed_dict={self.x: X})
@@ -169,7 +168,24 @@ class AutoEncoder:
                 avg_cost += (loss / count)
                 print(datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"), "- cost: %.3f" % loss, " time: ", time)
             print(datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"), "- avg_cost: %.3f" % avg_cost, " step: ", step)
-            # tf.train.Saver().save(self._sess, save_path="/home/ilmare/Desktop/FaceReplace/model/encoder")
+            tf.train.Saver().save(self._sess, save_path="/home/ilmare/Desktop/FaceReplace/model/encoder")
+    def load_model(self):
+        tf.train.Saver().restore(self._sess, tf.train.latest_checkpoint(r"F:/tensorflow/automodel/model_1/"))
+        source = cv2.imread(r"F:\tensorflow\automodel\scrawler\video\trainImg\95.jpg")
+        source = np.reshape(source, [1, 128, 128, 3])
+        hidden = self._sess.run(self._reconstruct1, feed_dict={self._x: source})
+        source = np.reshape(source, [128, 128, 3])
+        dest = np.reshape(hidden, [128, 128, 3])
+        print(hidden)
+        cv2.imshow("test", dest)
+        cv2.waitKey(0)
+        cv2.destroyAllWindows()
+        # fig = plt.figure("test")
+        # ax = fig.add_subplot(121)
+        # ax.imshow(source)
+        # bx = fig.add_subplot(122)
+        # bx.imshow(dest)
+        # plt.show()
 
 
 class ConvolutionalAutoencoder:
@@ -215,7 +231,7 @@ class ConvolutionalAutoencoder:
         define_encoder()
         define_decoder()
     def define_loss(self):
-        self._loss = tf.reduce_sum(tf.pow(tf.subtract(self._x, self._reconstruct), 2))
+        self._loss = 0.5 * tf.reduce_mean(tf.pow(tf.subtract(self._x, self._reconstruct), 2))
         self._optimizer = tf.train.AdamOptimizer(self._learning_rate).minimize(self._loss)
     def get_hidden_output(self, X):
         return self._sess.run(self._hidden, feed_dict={self._x: X})
@@ -255,8 +271,6 @@ class ConvolutionalAutoencoder:
         bx = fig.add_subplot(122)
         bx.imshow(dest)
         plt.show()
-
-
 
 class AGNAutoEncoder:
     def __init__(self, input_size, hidden_size,
@@ -350,7 +364,8 @@ class AGNAutoEncoder:
 
 
 if __name__ == "__main__":
-    obj = AutoEncoder(0.01, 20, 64)
+    obj = AutoEncoder(0.01, 20, 1)
+    obj.load_model()
     # obj = AGNAutoEncoder(784, 200, scale=0.01,max_step=100,
     #                      learning_rate=0.001)
     # obj.load_model()
