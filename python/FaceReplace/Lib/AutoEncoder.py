@@ -11,6 +11,7 @@ from matplotlib import pyplot as plt
 import cv2
 from Tools.DataObject import ImageTrainObject
 import datetime
+import re
 
 def xavier_init(input_count, output_count, constant=1):
     low = -constant * np.sqrt(6.0 / (input_count + output_count))
@@ -31,7 +32,13 @@ def conv2d(X, W, strides=[1,1,1,1], padding="VALID"):
     return tf.nn.conv2d(X, W, strides=strides, padding=padding)
 
 class AutoEncoder:
-    def __init__(self, learning_rate, max_step, batch_size, channel=3):
+    def __init__(self, learning_rate, max_step,
+                 batch_size, modelPath, channel=3):
+        self._modelPath = modelPath
+        if re.match(r"^/.+/[^.]+$", self._modelPath) is None:
+            raise Exception("filePath is invalid")
+        if [len(self._modelPath) - 1] != '/':
+            self._modelPath += '/'
         self._channel = channel
         self._learning_rate = learning_rate
         self._max_step = max_step
@@ -71,11 +78,11 @@ class AutoEncoder:
             with tf.name_scope("dense1"):
                 w1 = tf.Variable(initial_value=xavier_init(tmp_dim, 1024))
                 b1 = tf.Variable(initial_value=tf.zeros([1024], dtype=tf.float32))
-                link1 = tf.nn.bias_add(tf.matmul(flatten1, w1), b1)
+                link1 = tf.nn.leaky_relu(tf.nn.bias_add(tf.matmul(flatten1, w1), b1), alpha=0.1)
             with tf.name_scope("dense2"):
                 w2 = tf.Variable(initial_value=xavier_init(1024, tmp_dim))
                 b2 = tf.Variable(initial_value=tf.zeros([tmp_dim], dtype=tf.float32))
-                link2 = tf.nn.bias_add(tf.matmul(link1, w2), b2)
+                link2 = tf.nn.leaky_relu(tf.nn.bias_add(tf.matmul(link1, w2), b2), alpha=0.1)
                 link2 = tf.reshape(link2, [-1, 8, 8, 1024])
             with tf.name_scope("upscale1"):
                 upscale1_kernal = tf.Variable(initial_value=tf.truncated_normal(
@@ -148,11 +155,8 @@ class AutoEncoder:
         # define_decoder2()
     def reconstruct1(self, X):
         return self._sess.run(self._reconstruct1, feed_dict={self._x: X})
-    # @property
-    # def reconstruct2(self, X):
-    #     return self._sess.run(self._reconstruct2, feed_dict={self.x: X})
     def define_loss(self):
-        self._loss1 = tf.reduce_mean(tf.pow(tf.subtract(self._x, self._reconstruct1), 2))
+        self._loss1 = tf.reduce_sum(tf.pow(tf.subtract(self._x, self._reconstruct1), 2))
         self._optimizer1 = tf.train.AdamOptimizer(self._learning_rate).minimize(self._loss1)
         # self.loss2 = tf.reduce_mean(tf.pow(tf.subtract(self._x, self._reconstruct2), 2))
         # self._optimizer2 = tf.train.AdamOptimizer(self._learning_rate).minimize(self._loss2)
@@ -163,14 +167,15 @@ class AutoEncoder:
         for step in range(self._max_step):
             avg_cost = 0
             for time in range(count):
-                train = imgObj.generateBatch()
+                train = imgObj.generateBatch() / 255.0
                 _, loss = self._sess.run([self._optimizer1, self._loss1], feed_dict={self._x: train})
                 avg_cost += (loss / count)
                 print(datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"), "- cost: %.3f" % loss, " time: ", time)
             print(datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"), "- avg_cost: %.3f" % avg_cost, " step: ", step)
-            tf.train.Saver().save(self._sess, save_path="/home/ilmare/Desktop/FaceReplace/model/encoder")
+            tf.train.Saver().save(self._sess, save_path="{0}encoder".format(self._modelPath), global_step=step)
     def load_model(self):
-        tf.train.Saver().restore(self._sess, tf.train.latest_checkpoint(r"F:/tensorflow/automodel/model_1/"))
+        tf.train.Saver().restore(self._sess, tf.train.latest_checkpoint(self._modelPath))
+    def generateImage(self):
         source = cv2.imread(r"F:\tensorflow\automodel\scrawler\video\trainImg\95.jpg")
         source = np.reshape(source, [1, 128, 128, 3])
         hidden = self._sess.run(self._reconstruct1, feed_dict={self._x: source})
@@ -365,7 +370,6 @@ class AGNAutoEncoder:
 
 if __name__ == "__main__":
     obj = AutoEncoder(0.01, 20, 1)
-    obj.load_model()
     # obj = AGNAutoEncoder(784, 200, scale=0.01,max_step=100,
     #                      learning_rate=0.001)
     # obj.load_model()
