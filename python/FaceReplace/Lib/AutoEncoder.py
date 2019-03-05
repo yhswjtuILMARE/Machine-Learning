@@ -35,8 +35,8 @@ class AutoEncoder:
     def __init__(self, learning_rate, max_step,
                  batch_size, modelPath, channel=3):
         self._modelPath = modelPath
-        if re.match(r"^/.+/[^.]+$", self._modelPath) is None:
-            raise Exception("filePath is invalid")
+        # if re.match(r"^/.+/[^.]+$", self._modelPath) is None:
+        #     raise Exception("filePath is invalid")
         if [len(self._modelPath) - 1] != '/':
             self._modelPath += '/'
         self._channel = channel
@@ -78,11 +78,11 @@ class AutoEncoder:
             with tf.name_scope("dense1"):
                 w1 = tf.Variable(initial_value=xavier_init(tmp_dim, 1024))
                 b1 = tf.Variable(initial_value=tf.zeros([1024], dtype=tf.float32))
-                link1 = tf.nn.leaky_relu(tf.nn.bias_add(tf.matmul(flatten1, w1), b1), alpha=0.1)
+                link1 = tf.nn.sigmoid(tf.nn.bias_add(tf.matmul(flatten1, w1), b1))
             with tf.name_scope("dense2"):
                 w2 = tf.Variable(initial_value=xavier_init(1024, tmp_dim))
                 b2 = tf.Variable(initial_value=tf.zeros([tmp_dim], dtype=tf.float32))
-                link2 = tf.nn.leaky_relu(tf.nn.bias_add(tf.matmul(link1, w2), b2), alpha=0.1)
+                link2 = tf.nn.bias_add(tf.matmul(link1, w2), b2)
                 link2 = tf.reshape(link2, [-1, 8, 8, 1024])
             with tf.name_scope("upscale1"):
                 upscale1_kernal = tf.Variable(initial_value=tf.truncated_normal(
@@ -119,7 +119,7 @@ class AutoEncoder:
                     [5, 5, 64, self._channel], stddev=0.1, dtype=tf.float32))
                 h_conv5 = tf.nn.conv2d(upscale4, conv5_kernal, strides=[1, 1, 1, 1], padding="SAME")
                 conv5_b = tf.Variable(initial_value=tf.zeros([self._channel], dtype=tf.float32))
-                conv5 = tf.nn.sigmoid(tf.nn.bias_add(h_conv5, conv5_b))
+                conv5 = tf.nn.bias_add(h_conv5, conv5_b)
                 self._reconstruct1 = conv5
         # def define_decoder2():
         #     with tf.name_scope("upscale22"):
@@ -156,7 +156,7 @@ class AutoEncoder:
     def reconstruct1(self, X):
         return self._sess.run(self._reconstruct1, feed_dict={self._x: X})
     def define_loss(self):
-        self._loss1 = tf.reduce_sum(tf.pow(tf.subtract(self._x, self._reconstruct1), 2))
+        self._loss1 = 0.5 * tf.reduce_mean(tf.pow(tf.subtract(self._x, self._reconstruct1), 2))
         self._optimizer1 = tf.train.AdamOptimizer(self._learning_rate).minimize(self._loss1)
         # self.loss2 = tf.reduce_mean(tf.pow(tf.subtract(self._x, self._reconstruct2), 2))
         # self._optimizer2 = tf.train.AdamOptimizer(self._learning_rate).minimize(self._loss2)
@@ -176,15 +176,19 @@ class AutoEncoder:
     def load_model(self):
         tf.train.Saver().restore(self._sess, tf.train.latest_checkpoint(self._modelPath))
     def generateImage(self):
+        self._sess.run(tf.global_variables_initializer())
         source = cv2.imread(r"F:\tensorflow\automodel\scrawler\video\trainImg\95.jpg")
         source = np.reshape(source, [1, 128, 128, 3])
-        hidden = self._sess.run(self._reconstruct1, feed_dict={self._x: source})
+        hidden, dest = self._sess.run([self._loss1, self._reconstruct1], feed_dict={self._x: source})
         source = np.reshape(source, [128, 128, 3])
-        dest = np.reshape(hidden, [128, 128, 3])
-        print(hidden)
-        cv2.imshow("test", dest)
-        cv2.waitKey(0)
-        cv2.destroyAllWindows()
+        dest = np.reshape(dest, [128, 128, 3])
+        loss = 0.5*tf.reduce_mean(pow(np.subtract(dest, source), 2))
+        loss = self._sess.run(loss)
+        print(loss, hidden)
+        print(dest)
+        # cv2.imshow("test", dest)
+        # cv2.waitKey(0)
+        # cv2.destroyAllWindows()
         # fig = plt.figure("test")
         # ax = fig.add_subplot(121)
         # ax.imshow(source)
@@ -202,11 +206,11 @@ class ConvolutionalAutoencoder:
         self.define_network()
         self.define_loss()
     def define_network(self):
-        self._x = tf.placeholder(shape=[None, 28, 28, 1], dtype=tf.float32)
+        self._x = tf.placeholder(shape=[None, 128, 128, 3], dtype=tf.float32)
         def define_encoder():
             with tf.variable_scope("conv1") as scope:
                 conv1_kernal = tf.get_variable(name="conv1_kernal", initializer=tf.truncated_normal(
-                    shape=[5, 5, 1, 16], stddev=0.1, dtype=tf.float32))
+                    shape=[5, 5, 3, 16], stddev=0.1, dtype=tf.float32))
                 conv1_biases = tf.get_variable(name="conv1_biases", initializer=tf.zeros(shape=[16], dtype=tf.float32))
                 h_conv1 = tf.nn.conv2d(self._x, conv1_kernal, strides=[1, 2, 2, 1], padding="SAME")
                 conv1 = tf.nn.relu(tf.add(h_conv1, conv1_biases))
@@ -227,9 +231,9 @@ class ConvolutionalAutoencoder:
                 uconv1 = tf.nn.relu(tf.depth_to_space(tf.nn.bias_add(h_uconv1, uconv1_biases), 2))
             with tf.variable_scope("uconv2") as scope:
                 uconv2_kernal = tf.get_variable(name="uconv2_kernal", initializer=tf.truncated_normal(
-                    shape=[5, 5, 16, 4], stddev=0.1, dtype=tf.float32))
+                    shape=[5, 5, 16, 12], stddev=0.1, dtype=tf.float32))
                 uconv2_biases = tf.get_variable(name="uconv2_biases",
-                                                initializer=tf.zeros(shape=[4], dtype=tf.float32))
+                                                initializer=tf.zeros(shape=[12], dtype=tf.float32))
                 h_uconv2 = tf.nn.conv2d(uconv1, uconv2_kernal, strides=[1, 1, 1, 1], padding="SAME")
                 uconv2 = tf.depth_to_space(tf.nn.bias_add(h_uconv2, uconv2_biases), 2)
                 self._reconstruct = uconv2
@@ -247,35 +251,53 @@ class ConvolutionalAutoencoder:
             raise Exception("There is no hidden input")
         return self._sess.run(self._reconstruct, feed_dict={self._hidden: hidden})
     def train(self):
+        imgObj = ImageTrainObject("F:/tensorflow/automodel/scrawler/video/trainImg/", self._batch_size)
+        count = imgObj.DataCount // self._batch_size
         self._sess.run(tf.global_variables_initializer())
-        mnist = input_data.read_data_sets(r"/home/ilmare/dataSet/mnist", one_hot=True)
-        n_examples = int(mnist.train.num_examples)
         for step in range(self._max_step):
             avg_cost = 0
-            max_batch = n_examples // self._batch_size
-            for idx in range(max_batch):
-                train = get_random_block_from_data(mnist.train.images, self._batch_size)
-                train = np.reshape(train, newshape=[-1, 28, 28, 1])
+            for time in range(count):
+                train = imgObj.generateBatch()
                 _, loss = self._sess.run([self._optimizer, self._loss], feed_dict={self._x: train})
-                avg_cost += (loss / max_batch)
-                if (idx % 50) == 0:
-                    print("cost: %.3f" % loss, " batch: ", idx)
-            print("avg_cost: %.3f" % avg_cost, " step: ", step)
-        tf.train.Saver().save(self._sess, save_path="/home/ilmare/Desktop/FaceReplace/model/encoder")
+                avg_cost += (loss / count)
+                print(datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"), "- cost: %.3f" % loss, " time: ", time)
+            print(datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"), "- avg_cost: %.3f" % avg_cost, " step: ", step)
+            tf.train.Saver().save(self._sess, save_path="{0}encoder".format("F:/tensorflow/automodel/model/"), global_step=step)
+        # self._sess.run(tf.global_variables_initializer())
+        # mnist = input_data.read_data_sets(r"/home/ilmare/dataSet/mnist", one_hot=True)
+        # n_examples = int(mnist.train.num_examples)
+        # for step in range(self._max_step):
+        #     avg_cost = 0
+        #     max_batch = n_examples // self._batch_size
+        #     for idx in range(max_batch):
+        #         train = get_random_block_from_data(mnist.train.images, self._batch_size)
+        #         train = np.reshape(train, newshape=[-1, 28, 28, 1])
+        #         _, loss = self._sess.run([self._optimizer, self._loss], feed_dict={self._x: train})
+        #         avg_cost += (loss / max_batch)
+        #         if (idx % 50) == 0:
+        #             print("cost: %.3f" % loss, " batch: ", idx)
+        #     print("avg_cost: %.3f" % avg_cost, " step: ", step)
+        # tf.train.Saver().save(self._sess, save_path="/home/ilmare/Desktop/FaceReplace/model/encoder")
     def load_model(self):
-        tf.train.Saver().restore(self._sess, tf.train.latest_checkpoint("/home/ilmare/Desktop/FaceReplace/model/"))
-        mnist = input_data.read_data_sets(r"/home/ilmare/dataSet/mnist", one_hot=True)
-        source = np.reshape(mnist.test.images[15], [1, 28, 28, 1])
+        # tf.train.Saver().restore(self._sess, tf.train.latest_checkpoint("F:/tensorflow/automodel/model/"))
+        # mnist = input_data.read_data_sets(r"/home/ilmare/dataSet/mnist", one_hot=True)
+        # source = np.reshape(mnist.test.images[15], [1, 28, 28, 1])
+        self._sess.run(tf.global_variables_initializer())
+        source = cv2.imread(r"F:\tensorflow\automodel\scrawler\video\trainImg\101.jpg")
+        source = np.reshape(source, [1, 128, 128, 3])
         dest = self.get_reconstruct(source)
-        source = np.reshape(source, [28, 28])
-        dest = np.reshape(dest, [28, 28])
-        print(source.shape, dest.shape)
-        fig = plt.figure("test")
-        ax = fig.add_subplot(121)
-        ax.imshow(source)
-        bx = fig.add_subplot(122)
-        bx.imshow(dest)
-        plt.show()
+        source = np.reshape(source, [128, 128, 3])
+        dest = np.reshape(dest, [128, 128, 3])
+        print(dest)
+        cv2.imshow("aaa", dest)
+        cv2.waitKey(0)
+        cv2.destroyAllWindows()
+        # fig = plt.figure("test")
+        # ax = fig.add_subplot(121)
+        # ax.imshow(source)
+        # bx = fig.add_subplot(122)
+        # bx.imshow(dest)
+        # plt.show()
 
 class AGNAutoEncoder:
     def __init__(self, input_size, hidden_size,
@@ -369,7 +391,11 @@ class AGNAutoEncoder:
 
 
 if __name__ == "__main__":
-    obj = AutoEncoder(0.01, 20, 1)
+    # obj = ConvolutionalAutoencoder(0.01, 100, 1)
+    # obj.load_model()
+    obj = AutoEncoder(0.01, 100, 1, "F:/tensorflow/automodel/model_1/")
+    # obj.load_model()
+    obj.generateImage()
     # obj = AGNAutoEncoder(784, 200, scale=0.01,max_step=100,
     #                      learning_rate=0.001)
     # obj.load_model()

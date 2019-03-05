@@ -11,8 +11,8 @@ class ImageTrainObject:
     def __init__(self, filePath, batchSize):
         self._filePath = filePath
         self._batchSize = batchSize
-        if re.match(r"^/.+/[^.]+$", self._filePath) is None:
-            raise Exception("filePath is invalid")
+        # if re.match(r"^/.+/[^.]+$", self._filePath) is None:
+        #     raise Exception("filePath is invalid")
         if self._filePath[len(self._filePath) - 1] != '/':
             self._filePath += '/'
         self._fileItems = os.listdir(self._filePath)
