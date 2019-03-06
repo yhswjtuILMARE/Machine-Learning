@@ -31,7 +31,8 @@ class ImageTrainObject:
         return np.array(return_mat, dtype=np.float32)
 
 if __name__ == "__main__":
-    filePath = r"/home/ilmare/Desktop/FaceReplace/data/video/trainImg"
+    filePath = r"F:/tensorflow/automodel/scrawler/video/trainImg/"
     batchSize = 64
     obj = ImageTrainObject(filePath, batchSize)
+    obj.generateBatch()
     print(obj.DataCount)
