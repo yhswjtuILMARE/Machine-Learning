@@ -13,6 +13,13 @@ import re
 import matplotlib as mpl
 import os
 
+def xavier_init(input_count, output_count, constant=1):
+    low = -constant * np.sqrt(6.0 / (input_count + output_count))
+    high = constant * np.sqrt(6.0 / (input_count + output_count))
+    return tf.random_uniform((input_count, output_count),
+                            minval=low, maxval=high,
+                            dtype=tf.float32)
+
 class AutoEncoder:
     def __init__(self, learning_rate, max_step,
                  batch_size, modelPath, channel=3):
@@ -169,10 +176,10 @@ class AutoEncoder:
             dest, loss = self._sess.run([self._reconstruct1, self._loss1], feed_dict={self._x: source})
             dest = np.reshape(dest, [128, 128, 3])
             dest = np.array(dest * 255, dtype=np.uint8)
-            cv2.imwrite("{0}{1}".format(r"F:/tensorflow/automodel/scrawler/video/resImg/", file), dest)
+            cv2.imwrite("{0}{1}".format(r"F:/tensorflow/automodel/scrawler/video/resultImg/", file), dest)
             print(file, " -- ", loss)
     def generateImage(self):
-        source = cv2.imread(r"F:\tensorflow\automodel\scrawler\video\trainImg\18.jpg") / 255.0
+        source = cv2.imread(r"F:\tensorflow\automodel\scrawler\video\trainImg\2601.jpg") / 255.0
         source = np.reshape(source, [1, 128, 128, 3])
         loss, dest, hidden = self._sess.run([self._loss1, self._reconstruct1, self._tmp], feed_dict={self._x: source})
         source = np.reshape(source, [128, 128, 3])
