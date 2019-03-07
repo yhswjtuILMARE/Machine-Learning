@@ -59,16 +59,16 @@ class AutoEncoder:
                 tmp_dim = int(flatten1.get_shape()[1])
             with tf.name_scope("dense1"):
                 w1 = tf.Variable(initial_value=tf.truncated_normal(
-                    [tmp_dim, 1024], stddev=0.1, dtype=tf.float32))
-                b1 = tf.Variable(initial_value=tf.zeros([1024], dtype=tf.float32))
-                link1 = tf.nn.bias_add(tf.matmul(flatten1, w1), b1)
+                    [tmp_dim, 512], stddev=0.1, dtype=tf.float32))
+                b1 = tf.Variable(initial_value=tf.zeros([512], dtype=tf.float32))
+                link1 = tf.nn.leaky_relu(tf.nn.bias_add(tf.matmul(flatten1, w1), b1), alpha=0.1)
             with tf.name_scope("dense2"):
                 w2 = tf.Variable(initial_value=tf.truncated_normal(
-                    [1024, tmp_dim], stddev=0.1, dtype=tf.float32))
+                    [512, tmp_dim], stddev=0.1, dtype=tf.float32))
                 b2 = tf.Variable(initial_value=tf.zeros([tmp_dim], dtype=tf.float32))
-                link2 = tf.nn.bias_add(tf.matmul(link1, w2), b2)
+                link2 = tf.nn.relu(tf.nn.bias_add(tf.matmul(link1, w2), b2))
                 link2 = tf.reshape(link2, [-1, 8, 8, 128])
-                self._tmp = link1
+                self._tmp = tf.reduce_mean(link1)
             with tf.name_scope("upscale1"):
                 upscale1_kernal = tf.Variable(initial_value=tf.truncated_normal(
                     [3, 3, 128, 256], stddev=0.1, dtype=tf.float32))
@@ -149,26 +149,15 @@ class AutoEncoder:
         imgObj = ImageTrainObject(dataPath, self._batch_size)
         count = imgObj.DataCount // self._batch_size
         self._sess.run(tf.global_variables_initializer())
-        fig = plt.figure("loss_fig")
-        mpl.rcParams["xtick.labelsize"] = 6
-        mpl.rcParams["ytick.labelsize"] = 6
-        ax = fig.add_subplot(111)
-        ax.grid(True)
-        data = []
         for step in range(self._max_step):
             avg_cost = 0
             for time in range(count):
                 train = imgObj.generateBatch() / 255.0
-                _, loss = self._sess.run([self._optimizer1, self._loss1], feed_dict={self._x: train})
+                _, loss, tmp = self._sess.run([self._optimizer1, self._loss1, self._tmp], feed_dict={self._x: train})
                 avg_cost += (loss / count)
-                data.append(np.log(loss))
-                ax.plot(np.arange(len(data)), np.array(data), linewidth=0.8, color="r")
-                plt.draw()
-                plt.pause(0.1)
-                print(datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"), "- cost: %.3f" % loss, " time: ", time)
-            print(datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"), "- avg_cost: %.3f" % avg_cost, " step: ", step)
+                print(datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"), "- cost: %.3f" % loss, " time:", time, " avg:", tmp)
+            print(datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"), "- avg_cost: %.3f" % avg_cost, " step:", step)
             tf.train.Saver().save(self._sess, save_path="{0}encoder".format(self._modelPath), global_step=step)
-        plt.show()
     def load_model(self):
         tf.train.Saver().restore(self._sess, tf.train.latest_checkpoint(self._modelPath))
     def showAll(self):
@@ -178,142 +167,29 @@ class AutoEncoder:
             source = cv2.imread(r"{0}{1}".format(prePath, file)) / 255.0
             source = np.reshape(source, [1, 128, 128, 3])
             dest, loss = self._sess.run([self._reconstruct1, self._loss1], feed_dict={self._x: source})
-            # dest = np.reshape(dest, [128, 128, 3])
-            # dest = np.array(dest * 255, dtype=np.uint8)
-            # cv2.imwrite("{0}{1}".format(r"F:/tensorflow/automodel/scrawler/video/resultImg/", file), dest)
+            dest = np.reshape(dest, [128, 128, 3])
+            dest = np.array(dest * 255, dtype=np.uint8)
+            cv2.imwrite("{0}{1}".format(r"F:/tensorflow/automodel/scrawler/video/resImg/", file), dest)
             print(file, " -- ", loss)
     def generateImage(self):
-        source = cv2.imread(r"F:\tensorflow\automodel\scrawler\video\trainImg\98.jpg") / 255
+        source = cv2.imread(r"F:\tensorflow\automodel\scrawler\video\trainImg\18.jpg") / 255.0
         source = np.reshape(source, [1, 128, 128, 3])
         loss, dest, hidden = self._sess.run([self._loss1, self._reconstruct1, self._tmp], feed_dict={self._x: source})
         source = np.reshape(source, [128, 128, 3])
         dest = np.reshape(dest, [128, 128, 3])
         dest = np.array(dest * 255, dtype=np.uint8)
-        print(hidden)
-        cv2.imshow("test", dest)
-        cv2.waitKey(0)
-        cv2.destroyAllWindows()
-
-# class ConvolutionalAutoencoder:
-#     def __init__(self, learning_rate, max_step, batch_size):
-#         self._learning_rate = learning_rate
-#         self._max_step = max_step
-#         self._batch_size = batch_size
-#         self._sess = tf.Session()
-#         self.define_network()
-#         self.define_loss()
-#     def define_network(self):
-#         self._x = tf.placeholder(shape=[None, 128, 128, 3], dtype=tf.float32)
-#         def define_encoder():
-#             with tf.variable_scope("conv1") as scope:
-#                 conv1_kernal = tf.get_variable(name="conv1_kernal", initializer=tf.truncated_normal(
-#                     shape=[5, 5, 3, 16], stddev=0.1, dtype=tf.float32))
-#                 conv1_biases = tf.get_variable(name="conv1_biases", initializer=tf.zeros(shape=[16], dtype=tf.float32))
-#                 h_conv1 = tf.nn.conv2d(self._x, conv1_kernal, strides=[1, 2, 2, 1], padding="SAME")
-#                 conv1 = tf.nn.leaky_relu(tf.add(h_conv1, conv1_biases), alpha=0.1)
-#             with tf.variable_scope("conv2") as scope:
-#                 conv2_kernal = tf.get_variable(name="conv2_kernal",
-#                                                initializer=tf.truncated_normal(
-#                                                    shape=[5, 5, 16, 32], stddev=0.1, dtype=tf.float32))
-#                 conv2_biases = tf.get_variable(name="conv2_biases",
-#                                                initializer=tf.zeros(shape=[32], dtype=tf.float32))
-#                 h_conv2 = tf.nn.conv2d(conv1, conv2_kernal, strides=[1, 2, 2, 1], padding="SAME")
-#                 conv2 = tf.nn.leaky_relu(h_conv2 + conv2_biases, alpha=0.1)
-#                 flatten1 = tf.layers.Flatten()(conv2)
-#                 tmp_dim = int(flatten1.get_shape()[1])
-#             with tf.name_scope("dense1"):
-#                 w1 = tf.Variable(initial_value=xavier_init(tmp_dim, 256))
-#                 b1 = tf.Variable(initial_value=tf.zeros([256], dtype=tf.float32))
-#                 link1 = tf.nn.sigmoid(tf.nn.bias_add(tf.matmul(flatten1, w1), b1))
-#             with tf.name_scope("dense2"):
-#                 w2 = tf.Variable(initial_value=xavier_init(256, tmp_dim))
-#                 b2 = tf.Variable(initial_value=tf.zeros([tmp_dim], dtype=tf.float32))
-#                 link2 = tf.nn.sigmoid(tf.nn.bias_add(tf.matmul(link1, w2), b2))
-#                 link2 = tf.reshape(link2, [-1, 32, 32, 32])
-#             with tf.name_scope("upscale1"):
-#                 upscale1_kernal = tf.Variable(initial_value=tf.truncated_normal(
-#                         [3, 3, 32, 64], stddev=0.1, dtype=tf.float32))
-#                 upscale1_b = tf.Variable(initial_value=tf.zeros([64], dtype=tf.float32))
-#                 h_upscale1 = tf.nn.conv2d(conv2, upscale1_kernal, strides=[1, 1, 1, 1], padding="SAME")
-#                 upscale1 = tf.nn.leaky_relu(tf.nn.bias_add(h_upscale1, upscale1_b), alpha=0.1)
-#                 upscale1 = tf.depth_to_space(upscale1, 2)
-#                 self._hidden = upscale1
-#         def define_decoder():
-#             with tf.variable_scope("uconv1") as scope:
-#                 uconv1_kernal = tf.get_variable(name="uconv1_kernal", initializer=tf.truncated_normal(
-#                     shape=[3, 3, 16, 32], dtype=tf.float32, stddev=0.1))
-#                 uconv1_biases = tf.get_variable(name="uconv1_biases",
-#                                                 initializer=tf.zeros(shape=[32], dtype=tf.float32))
-#                 h_uconv1 = tf.nn.conv2d(self._hidden, uconv1_kernal, strides=[1, 1, 1, 1], padding="SAME")
-#                 uconv1 = tf.depth_to_space(tf.nn.leaky_relu(tf.nn.bias_add(h_uconv1, uconv1_biases), alpha=0.1), 2)
-#             with tf.variable_scope("uconv2") as scope:
-#                 uconv2_kernal = tf.get_variable(name="uconv2_kernal", initializer=tf.truncated_normal(
-#                     shape=[5, 5, 8, 3], stddev=0.1, dtype=tf.float32))
-#                 uconv2_biases = tf.get_variable(name="uconv2_biases",
-#                                                 initializer=tf.zeros(shape=[3], dtype=tf.float32))
-#                 h_uconv2 = tf.nn.conv2d(uconv1, uconv2_kernal, strides=[1, 1, 1, 1], padding="SAME")
-#                 uconv2 = tf.nn.leaky_relu(tf.nn.bias_add(h_uconv2, uconv2_biases), alpha=0.1)
-#                 self._reconstruct = uconv2
-#         define_encoder()
-#         define_decoder()
-#     def define_loss(self):
-#         self._loss = 0.5 * tf.reduce_sum(tf.pow(tf.subtract(self._x, self._reconstruct), 2))
-#         self._optimizer = tf.train.AdamOptimizer(self._learning_rate).minimize(self._loss)
-#     def get_hidden_output(self, X):
-#         return self._sess.run(self._hidden, feed_dict={self._x: X})
-#     def get_reconstruct(self, X):
-#         return self._sess.run(self._reconstruct, feed_dict={self._x: X})
-#     def generate(self, hidden=None):
-#         if hidden is None:
-#             raise Exception("There is no hidden input")
-#         return self._sess.run(self._reconstruct, feed_dict={self._hidden: hidden})
-#     def train(self):
-#         imgObj = ImageTrainObject("F:/tensorflow/automodel/scrawler/video/trainImg/", self._batch_size)
-#         count = imgObj.DataCount // self._batch_size
-#         self._sess.run(tf.global_variables_initializer())
-#         fig = plt.figure("loss_fig")
-#         mpl.rcParams["xtick.labelsize"] = 6
-#         mpl.rcParams["ytick.labelsize"] = 6
-#         ax = fig.add_subplot(111)
-#         ax.grid(True)
-#         data = []
-#         for step in range(self._max_step):
-#             avg_cost = 0
-#             for times in range(count):
-#                 train = imgObj.generateBatch() / 255.0
-#                 _, loss = self._sess.run([self._optimizer, self._loss], feed_dict={self._x: train})
-#                 avg_cost += (loss / count)
-#                 data.append(np.log(loss))
-#                 ax.plot(np.arange(len(data)), np.array(data), linewidth=0.8, color="r")
-#                 plt.draw()
-#                 plt.pause(0.1)
-#                 print(datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"), "- cost: %.3f" % loss, " time: ", times)
-#             print(datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"), "- avg_cost: %.3f" % avg_cost, " step: ", step)
-#             tf.train.Saver().save(self._sess, save_path="{0}encoder".format("F:/tensorflow/automodel/model/"), global_step=step)
-#         plt.show()
-#     def showAll(self):
-#         tf.train.Saver().restore(self._sess, tf.train.latest_checkpoint("F:/tensorflow/automodel/model/"))
-#         prePath = "F:/tensorflow/automodel/scrawler/video/trainImg/"
-#         items = os.listdir(prePath)
-#         for file in items:
-#             source = cv2.imread(r"{0}{1}".format(prePath, file)) / 255.0
-#             source = np.reshape(source, [1, 128, 128, 3])
-#             dest = self.get_reconstruct(source)
-#             dest = np.reshape(dest, [128, 128, 3])
-#             dest = np.array(dest * 255, dtype=np.uint8)
-#             cv2.imwrite("{0}{1}".format(r"F:/tensorflow/automodel/scrawler/video/resultImg/", file), dest)
-#             print(file)
-#     def load_model(self):
-#         tf.train.Saver().restore(self._sess, tf.train.latest_checkpoint("F:/tensorflow/automodel/model/"))
-#         source = cv2.imread("F:/tensorflow/automodel/scrawler/video/trainImg/18.jpg")
-#         source = np.reshape(source, [1, 128, 128, 3]) / 255.0
-#         dest, loss = self._sess.run([self._reconstruct, self._loss], feed_dict={self._x: source})
-#         dest = np.reshape(dest, [128, 128, 3])
-#         dest = np.array(dest * 255, dtype=np.uint8)
-#         print(loss)
-#         cv2.imshow("aaa", dest)
-#         cv2.waitKey(0)
-#         cv2.destroyAllWindows()
+        fig = plt.figure("compare")
+        ax = fig.add_subplot(121)
+        b, g, r = cv2.split(source)
+        source = cv2.merge([r, g, b])
+        ax.imshow(source)
+        ax.axis("off")
+        bx = fig.add_subplot(122)
+        bx.axis("off")
+        b, g, r = cv2.split(dest)
+        dest = cv2.merge([r, g, b])
+        bx.imshow(dest)
+        plt.show()
 
 class ConvolutionalAutoencoder:
     def __init__(self, learning_rate, max_step, batch_size):
@@ -329,43 +205,51 @@ class ConvolutionalAutoencoder:
             with tf.variable_scope("conv1") as scope:
                 conv1_kernal = tf.get_variable(name="conv1_kernal", initializer=tf.truncated_normal(
                     shape=[5, 5, 3, 16], stddev=0.1, dtype=tf.float32))
+                conv1_biases = tf.get_variable(name="conv1_biases", initializer=tf.zeros(shape=[16], dtype=tf.float32))
                 h_conv1 = tf.nn.conv2d(self._x, conv1_kernal, strides=[1, 2, 2, 1], padding="SAME")
-                conv1 = tf.nn.leaky_relu(h_conv1, alpha=0.1)
+                conv1 = tf.nn.leaky_relu(tf.add(h_conv1, conv1_biases), alpha=0.1)
             with tf.variable_scope("conv2") as scope:
                 conv2_kernal = tf.get_variable(name="conv2_kernal",
                                                initializer=tf.truncated_normal(
                                                    shape=[5, 5, 16, 32], stddev=0.1, dtype=tf.float32))
+                conv2_biases = tf.get_variable(name="conv2_biases",
+                                               initializer=tf.zeros(shape=[32], dtype=tf.float32))
                 h_conv2 = tf.nn.conv2d(conv1, conv2_kernal, strides=[1, 2, 2, 1], padding="SAME")
-                conv2 = tf.nn.leaky_relu(h_conv2, alpha=0.1)
-                # flatten1 = tf.layers.Flatten()(conv2)
-                # tmp_dim = int(flatten1.get_shape()[1])
-            # with tf.name_scope("dense1"):
-            #     w1 = tf.Variable(initial_value=xavier_init(tmp_dim, 256))
-            #     b1 = tf.Variable(initial_value=tf.zeros([256], dtype=tf.float32))
-            #     link1 = tf.nn.sigmoid(tf.nn.bias_add(tf.matmul(flatten1, w1), b1))
-            # with tf.name_scope("dense2"):
-            #     w2 = tf.Variable(initial_value=xavier_init(256, tmp_dim))
-            #     b2 = tf.Variable(initial_value=tf.zeros([tmp_dim], dtype=tf.float32))
-            #     link2 = tf.nn.sigmoid(tf.nn.bias_add(tf.matmul(link1, w2), b2))
-            #     link2 = tf.reshape(link2, [-1, 32, 32, 32])
+                conv2 = tf.nn.leaky_relu(h_conv2 + conv2_biases, alpha=0.1)
+                flatten1 = tf.layers.Flatten()(conv2)
+                tmp_dim = int(flatten1.get_shape()[1])
+            with tf.name_scope("dense1"):
+                w1 = tf.Variable(initial_value=xavier_init(tmp_dim, 256))
+                b1 = tf.Variable(initial_value=tf.zeros([256], dtype=tf.float32))
+                link1 = tf.nn.sigmoid(tf.nn.bias_add(tf.matmul(flatten1, w1), b1))
+            with tf.name_scope("dense2"):
+                w2 = tf.Variable(initial_value=xavier_init(256, tmp_dim))
+                b2 = tf.Variable(initial_value=tf.zeros([tmp_dim], dtype=tf.float32))
+                link2 = tf.nn.sigmoid(tf.nn.bias_add(tf.matmul(link1, w2), b2))
+                link2 = tf.reshape(link2, [-1, 32, 32, 32])
             with tf.name_scope("upscale1"):
                 upscale1_kernal = tf.Variable(initial_value=tf.truncated_normal(
                         [3, 3, 32, 64], stddev=0.1, dtype=tf.float32))
+                upscale1_b = tf.Variable(initial_value=tf.zeros([64], dtype=tf.float32))
                 h_upscale1 = tf.nn.conv2d(conv2, upscale1_kernal, strides=[1, 1, 1, 1], padding="SAME")
-                upscale1 = tf.nn.leaky_relu(h_upscale1, alpha=0.1)
+                upscale1 = tf.nn.leaky_relu(tf.nn.bias_add(h_upscale1, upscale1_b), alpha=0.1)
                 upscale1 = tf.depth_to_space(upscale1, 2)
                 self._hidden = upscale1
         def define_decoder():
-            with tf.variable_scope("uconv1"):
+            with tf.variable_scope("uconv1") as scope:
                 uconv1_kernal = tf.get_variable(name="uconv1_kernal", initializer=tf.truncated_normal(
                     shape=[3, 3, 16, 32], dtype=tf.float32, stddev=0.1))
+                uconv1_biases = tf.get_variable(name="uconv1_biases",
+                                                initializer=tf.zeros(shape=[32], dtype=tf.float32))
                 h_uconv1 = tf.nn.conv2d(self._hidden, uconv1_kernal, strides=[1, 1, 1, 1], padding="SAME")
-                uconv1 = tf.depth_to_space(tf.nn.leaky_relu(h_uconv1, alpha=0.1), 2)
-            with tf.variable_scope("uconv2"):
+                uconv1 = tf.depth_to_space(tf.nn.leaky_relu(tf.nn.bias_add(h_uconv1, uconv1_biases), alpha=0.1), 2)
+            with tf.variable_scope("uconv2") as scope:
                 uconv2_kernal = tf.get_variable(name="uconv2_kernal", initializer=tf.truncated_normal(
                     shape=[5, 5, 8, 3], stddev=0.1, dtype=tf.float32))
+                uconv2_biases = tf.get_variable(name="uconv2_biases",
+                                                initializer=tf.zeros(shape=[3], dtype=tf.float32))
                 h_uconv2 = tf.nn.conv2d(uconv1, uconv2_kernal, strides=[1, 1, 1, 1], padding="SAME")
-                uconv2 = tf.nn.leaky_relu(h_uconv2, alpha=0.1)
+                uconv2 = tf.nn.leaky_relu(tf.nn.bias_add(h_uconv2, uconv2_biases), alpha=0.1)
                 self._reconstruct = uconv2
         define_encoder()
         define_decoder()
@@ -418,7 +302,7 @@ class ConvolutionalAutoencoder:
             print(file)
     def load_model(self):
         tf.train.Saver().restore(self._sess, tf.train.latest_checkpoint("F:/tensorflow/automodel/model/"))
-        source = cv2.imread("F:/tensorflow/automodel/scrawler/video/trainImg/98.jpg")
+        source = cv2.imread("F:/tensorflow/automodel/scrawler/video/trainImg/18.jpg")
         source = np.reshape(source, [1, 128, 128, 3]) / 255.0
         dest, loss = self._sess.run([self._reconstruct, self._loss], feed_dict={self._x: source})
         dest = np.reshape(dest, [128, 128, 3])
@@ -430,13 +314,12 @@ class ConvolutionalAutoencoder:
 
 
 
-
 if __name__ == "__main__":
     # obj = ConvolutionalAutoencoder(0.01, 5, 64)
     # obj.train()
     # obj.load_model()
-    obj = AutoEncoder(0.005, 100, 64, "F:/tensorflow/automodel/model_1/")
-    # obj.load_model()
-    # obj.generateImage()
-    obj.train(r"F:/tensorflow/automodel/scrawler/video/trainImg/")
-    # obj.generateImage()
+    obj = AutoEncoder(0.005, 100, 1, "F:/tensorflow/automodel/model_1/")
+    obj.load_model()
+    # obj.showAll()
+    # obj.train(r"F:/tensorflow/automodel/scrawler/video/trainImg/")
+    obj.generateImage()
