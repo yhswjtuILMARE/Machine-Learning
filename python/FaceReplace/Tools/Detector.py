@@ -3,8 +3,8 @@ Created By ILMARE
 @Date 2019-3-2
 '''
 
-from dlib import shape_predictor as predictor
-from dlib import get_frontal_face_detector as detector
+# from dlib import shape_predictor as predictor
+# from dlib import get_frontal_face_detector as detector
 import cv2
 import os
 from  matplotlib import pyplot as plt
@@ -56,8 +56,8 @@ class PhotoParser:
         self._modelFile = modelFile
         self._videoPath = videoPath
         res = re.match(r"^/.+/\w+\.\w+$", self._videoPath)
-        if res is None:
-            raise Exception("video path is invalid")
+        # if res is None:
+        #     raise Exception("video path is invalid")
         res = re.search(r"/.+/(?=\w+\.\w+)", self._videoPath)
         self._savePath = "{0}{1}/".format(res.group(), "parseImg")
         if not os.path.exists(self._savePath):
@@ -83,36 +83,36 @@ class PhotoParser:
                 break
         print(datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"), "- Total Parsed Photo: ", self._photoCount)
         vc.release()
-    def detectorPhotoFace(self):
-        if len(os.listdir(self._savePath)) == 0:
-            raise Exception("There is no photo at {0}".format(self._savePath))
-        detectorObj = detector()
-        predictorObj = predictor(self._modelFile)
-        imageShape = (640, 360)
-        destEyePoint = [(316, 92), (385, 92)]
-        try:
-            fileList = os.listdir(self._savePath)
-            for file, idx in zip(fileList, range(len(fileList))):
-                filePath = "{0}{1}".format(self._savePath, file)
-                img = cv2.imread(filePath)
-                rects = detectorObj(img, 1)
-                if len(rects) > 1 or len(rects) == 0:
-                    print(datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"), "-", filePath)
-                    continue
-                img = self.__warpPhoto(predictorObj, destEyePoint, imageShape, img, rects[0])
-                rects = detectorObj(img, 1)
-                if len(rects) > 1 or len(rects) == 0:
-                    print(datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"), "-", filePath)
-                    continue
-                rect = rects[0]
-                left, top, width, height = rect.left(), rect.top(), rect.right() - rect.left(), rect.bottom() - rect.top()
-                img = img[top:top + height, left:left + width, :]
-                img = self.__resizePhoto(img)
-                cv2.imwrite("{0}{1}.jpg".format(self._trainPath, idx), img)
-                if (idx % 100) == 0:
-                    print(datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"), "- current index: ", idx)
-        except Exception as e:
-            print(e)
+    # def detectorPhotoFace(self):
+    #     if len(os.listdir(self._savePath)) == 0:
+    #         raise Exception("There is no photo at {0}".format(self._savePath))
+    #     detectorObj = detector()
+    #     predictorObj = predictor(self._modelFile)
+    #     imageShape = (640, 360)
+    #     destEyePoint = [(316, 92), (385, 92)]
+    #     try:
+    #         fileList = os.listdir(self._savePath)
+    #         for file, idx in zip(fileList, range(len(fileList))):
+    #             filePath = "{0}{1}".format(self._savePath, file)
+    #             img = cv2.imread(filePath)
+    #             rects = detectorObj(img, 1)
+    #             if len(rects) > 1 or len(rects) == 0:
+    #                 print(datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"), "-", filePath)
+    #                 continue
+    #             img = self.__warpPhoto(predictorObj, destEyePoint, imageShape, img, rects[0])
+    #             rects = detectorObj(img, 1)
+    #             if len(rects) > 1 or len(rects) == 0:
+    #                 print(datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"), "-", filePath)
+    #                 continue
+    #             rect = rects[0]
+    #             left, top, width, height = rect.left(), rect.top(), rect.right() - rect.left(), rect.bottom() - rect.top()
+    #             img = img[top:top + height, left:left + width, :]
+    #             img = self.__resizePhoto(img)
+    #             cv2.imwrite("{0}{1}.jpg".format(self._trainPath, idx), img)
+    #             if (idx % 100) == 0:
+    #                 print(datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"), "- current index: ", idx)
+    #     except Exception as e:
+    #         print(e)
     def __warpPhoto(self, predictorObj , destEyePoint, imageShape, img, rect):
         points = predictorObj(img, rect)
         inPts = [(points.parts()[36].x, points.parts()[36].y), (points.parts()[45].x, points.parts()[45].y)]
@@ -142,7 +142,7 @@ class PhotoParser:
 
 
 if __name__ == "__main__":
-    videoPath = r"/home/ilmare/Desktop/FaceReplace/data/video-1/112.mp4"
+    videoPath = r"F:/tensorflow/automodel/scrawler/video-1/dest2.mp4"
     obj = PhotoParser(videoPath, modelFile, (128, 128))
-    obj.detectorPhotoFace()
+    obj.getPhotoFromVideo()
 
