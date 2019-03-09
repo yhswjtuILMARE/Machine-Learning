@@ -2,6 +2,10 @@
 Created By ILMARE
 @Date 2019-2-27
 '''
+import sys
+import os
+
+sys.path.append(os.getcwd())
 
 import tensorflow as tf
 import numpy as np
@@ -366,15 +370,15 @@ class AutoEncoder:
         destImgObj = ImageTrainObject(destTrainPath, self._batch_size)
         destCount = destImgObj.DataCount // self._batch_size
         self._sess.run(tf.global_variables_initializer())
-        mpl.rcParams["xtick.labelsize"] = 6
-        mpl.rcParams["ytick.labelsize"] = 6
-        fig = plt.figure("cost")
-        ax = fig.add_subplot(211)
-        ax.grid(True)
-        bx = fig.add_subplot(212)
-        bx.grid(True)
-        sourceData = []
-        destData = []
+        # mpl.rcParams["xtick.labelsize"] = 6
+        # mpl.rcParams["ytick.labelsize"] = 6
+        # fig = plt.figure("cost")
+        # ax = fig.add_subplot(211)
+        # ax.grid(True)
+        # bx = fig.add_subplot(212)
+        # bx.grid(True)
+        # sourceData = []
+        # destData = []
         for step in range(self._max_step):
             source_avg_cost = 0
             dest_avg_cost = 0
@@ -382,17 +386,17 @@ class AutoEncoder:
                 train = sourceImgObj.generateBatch() / 255.0
                 _, loss, tmp = self._sess.run([self._optimizer1, self._loss1, self._tmp], feed_dict={self._x: train})
                 source_avg_cost += (loss / (sourceCount + destCount))
-                sourceData.append(loss)
-                ax.plot(np.arange(len(sourceData)), np.sqrt(sourceData), linewidth=0.8, color="r")
-                plt.pause(0.01)
+                # sourceData.append(loss)
+                # ax.plot(np.arange(len(sourceData)), np.sqrt(sourceData), linewidth=0.8, color="r")
+                # plt.pause(0.01)
                 print(datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"), "- [source] cost: %3.5f" % loss,
                       "avg: %3.5f" % tmp)
                 train = destImgObj.generateBatch() / 255.0
                 _, loss, tmp = self._sess.run([self._optimizer2, self._loss2, self._tmp], feed_dict={self._x: train})
                 dest_avg_cost += (loss / (sourceCount + destCount))
-                destData.append(loss)
-                bx.plot(np.arange(len(destData)), np.sqrt(destData), linewidth=0.8, color="b")
-                plt.pause(0.01)
+                # destData.append(loss)
+                # bx.plot(np.arange(len(destData)), np.sqrt(destData), linewidth=0.8, color="b")
+                # plt.pause(0.01)
                 print(datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"), "- [ dest ] cost: %3.5f" % loss,
                       "avg: %3.5f" % tmp, "time:", time)
             print(datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"), "- source_avg_cost: %3.5f" % source_avg_cost,
@@ -413,9 +417,9 @@ class AutoEncoder:
             cv2.imwrite("{0}{1}".format(r"F:/tensorflow/automodel/scrawler/video/resultImg/", file), dest)
             print(file, " -- ", loss)
     def generateImage(self):
-        source = cv2.imread(r"F:\tensorflow\automodel\scrawler\video\trainImg\18.jpg") / 255.0
+        source = cv2.imread(r"F:\tensorflow\automodel\scrawler\video\trainImg\82.jpg") / 255.0
         source = np.reshape(source, [1, 128, 128, 3])
-        dest = self._sess.run(self._reconstruct1, feed_dict={self._x: source})
+        dest = self._sess.run(self._reconstruct2, feed_dict={self._x: source})
         source = np.reshape(source, [128, 128, 3])
         dest = np.reshape(dest, [128, 128, 3])
         dest = np.array(dest * 255, dtype=np.uint8)
@@ -556,12 +560,12 @@ class ConvolutionalAutoencoder:
 
 
 if __name__ == "__main__":
-    obj = AutoEncoder(5e-5, 100, 128, "F:/tensorflow/automodel/model/")
-    # obj.load_model()
-    # obj.generateImage()
+    obj = AutoEncoder(5e-5, 100, 1, "F:/tensorflow/automodel/model/")
+    obj.load_model()
+    obj.generateImage()
     # obj.showAll()
-    obj.train(sourceTrainPath=r"F:/tensorflow/automodel/scrawler/video/trainImg/",
-              destTrainPath=r"F:/tensorflow/automodel/scrawler/video-1/trainImg/")
+    # obj.train(sourceTrainPath=r"F:/tensorflow/automodel/scrawler/video/trainImg/",
+    #           destTrainPath=r"F:/tensorflow/automodel/scrawler/video-1/trainImg/")
     # obj = ConvolutionalAutoencoder(0.01, 5, 64)
     # obj.train()
     # obj.load_model()
