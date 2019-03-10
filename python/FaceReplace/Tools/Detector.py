@@ -56,8 +56,8 @@ class PhotoParser:
         self._modelFile = modelFile
         self._videoPath = videoPath
         res = re.match(r"^/.+/\w+\.\w+$", self._videoPath)
-        # if res is None:
-        #     raise Exception("video path is invalid")
+        if res is None:
+            raise Exception("video path is invalid")
         res = re.search(r"/.+/(?=\w+\.\w+)", self._videoPath)
         self._savePath = "{0}{1}/".format(res.group(), "parseImg")
         if not os.path.exists(self._savePath):
