@@ -157,15 +157,15 @@ class AutoEncoder:
         destImgObj = ImageTrainObject(destTrainPath, self._batch_size)
         destCount = destImgObj.DataCount // self._batch_size
         self._sess.run(tf.global_variables_initializer())
-        mpl.rcParams["xtick.labelsize"] = 6
-        mpl.rcParams["ytick.labelsize"] = 6
-        fig = plt.figure("cost")
-        ax = fig.add_subplot(211)
-        ax.grid(True)
-        bx = fig.add_subplot(212)
-        bx.grid(True)
-        sourceData = []
-        destData = []
+        # mpl.rcParams["xtick.labelsize"] = 6
+        # mpl.rcParams["ytick.labelsize"] = 6
+        # fig = plt.figure("cost")
+        # ax = fig.add_subplot(211)
+        # ax.grid(True)
+        # bx = fig.add_subplot(212)
+        # bx.grid(True)
+        # sourceData = []
+        # destData = []
         for step in range(self._max_step):
             source_avg_cost = 0
             dest_avg_cost = 0
@@ -173,17 +173,17 @@ class AutoEncoder:
                 train = sourceImgObj.generateBatch() / 255.0
                 _, loss, tmp = self._sess.run([self._optimizer1, self._loss1, self._tmp], feed_dict={self._x: train})
                 source_avg_cost += (loss / (sourceCount + destCount))
-                sourceData.append(loss)
-                ax.plot(np.arange(len(sourceData)), np.sqrt(sourceData), linewidth=0.8, color="r")
-                plt.pause(0.01)
+                # sourceData.append(loss)
+                # ax.plot(np.arange(len(sourceData)), np.sqrt(sourceData), linewidth=0.8, color="r")
+                # plt.pause(0.01)
                 print(datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"), "- [source] cost: %3.5f" % loss,
                       "avg: %.5f" % tmp)
                 train = destImgObj.generateBatch() / 255.0
                 _, loss, tmp = self._sess.run([self._optimizer2, self._loss2, self._tmp], feed_dict={self._x: train})
                 dest_avg_cost += (loss / (sourceCount + destCount))
-                destData.append(loss)
-                bx.plot(np.arange(len(destData)), np.sqrt(destData), linewidth=0.8, color="b")
-                plt.pause(0.01)
+                # destData.append(loss)
+                # bx.plot(np.arange(len(destData)), np.sqrt(destData), linewidth=0.8, color="b")
+                # plt.pause(0.01)
                 print(datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"), "- [ dest ] cost: %3.5f" % loss,
                       "avg: %.5f" % tmp, "time:", time)
             print(datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"), "- source_avg_cost: %3.5f" % source_avg_cost,
@@ -191,23 +191,43 @@ class AutoEncoder:
             tf.train.Saver().save(self._sess, save_path="{0}encoder".format(self._modelPath), global_step=step)
         # plt.show()
     def load_model(self):
-        # tf.train.latest_checkpoint(self._modelPath)
-        tf.train.Saver().restore(self._sess, "{0}{1}".format(self._modelPath, "encoder-12"))
-    def showAll(self):
-        prePath = "/Users/yh_swjtu/Desktop/Machine/video/trainImg/"
+        path = tf.train.latest_checkpoint(self._modelPath)
+        tf.train.Saver().restore(self._sess, path)
+    def showAll(self, batchSize=32):
+        prePath = "F:/tensorflow/automodel/scrawler/video/trainImg/"
+        resPath = r"F:/tensorflow/automodel/scrawler/video/res_1Img/"
         items = os.listdir(prePath)
-        for file in items:
+        tmp_list = []
+        fileName_list = []
+        totalFiles = len(items)
+        for idx, file in enumerate(items):
             source = cv2.imread(r"{0}{1}".format(prePath, file)) / 255.0
-            source = np.reshape(source, [1, 128, 128, 3])
-            dest, loss = self._sess.run([self._reconstruct2, self._loss1], feed_dict={self._x: source})
-            dest = np.reshape(dest, [128, 128, 3])
-            dest = np.array(dest * 255, dtype=np.uint8)
-            cv2.imwrite("{0}{1}".format(r"/Users/yh_swjtu/Desktop/Machine/video/res-1/", file), dest)
-            print(file, " -- ", loss)
+            tmp_list.append(source)
+            fileName_list.append(file)
+            if len(tmp_list) == batchSize:
+                matrix = np.array(tmp_list, dtype=np.float32)
+                dest = self._sess.run(self._reconstruct2, feed_dict={self._x: matrix})
+                for img, name in zip(dest, fileName_list):
+                    dest = np.array(img * 255, dtype=np.uint8)
+                    filePath = "{0}{1}".format(resPath, name)
+                    cv2.imwrite(filePath, dest)
+                    print(filePath)
+                tmp_list = []
+                fileName_list = []
+            elif idx == (totalFiles - 1):
+                matrix = np.array(tmp_list, dtype=np.float32)
+                dest = self._sess.run(self._reconstruct2, feed_dict={self._x: matrix})
+                for img, name in zip(dest, fileName_list):
+                    dest = np.array(img * 255, dtype=np.uint8)
+                    filePath = "{0}{1}".format(resPath, name)
+                    cv2.imwrite(filePath, dest)
+                    print(filePath)
+                tmp_list = []
+                fileName_list = []
     def generateImage(self):
-        source = cv2.imread(r"/Users/yh_swjtu/Desktop/Machine/video/trainImg/350.jpg") / 255
+        source = cv2.imread(r"F:/tensorflow/automodel/scrawler/video/trainImg/18.jpg") / 255.0
         source = np.reshape(source, [1, 128, 128, 3])
-        dest = self._sess.run(self._reconstruct2, feed_dict={self._x: source})
+        dest = self._sess.run(self._reconstruct1, feed_dict={self._x: source})
         source = np.reshape(source, [128, 128, 3])
         dest = np.reshape(dest, [128, 128, 3])
         dest = np.array(dest * 255, dtype=np.uint8)
@@ -235,8 +255,8 @@ def xavier_init(input_count, output_count, constant=1.0):
 #     def __init__(self, learning_rate, max_step,
 #                  batch_size, modelPath, channel=3):
 #         self._modelPath = modelPath
-#         if re.match(r"^/.+/[^.]+$", self._modelPath) is None:
-#             raise Exception("filePath is invalid")
+#         # if re.match(r"^/.+/[^.]+$", self._modelPath) is None:
+#         #     raise Exception("filePath is invalid")
 #         if self._modelPath[len(self._modelPath) - 1] != '/':
 #             self._modelPath += '/'
 #         self._channel = channel
@@ -405,22 +425,43 @@ def xavier_init(input_count, output_count, constant=1.0):
 #             tf.train.Saver().save(self._sess, save_path="{0}encoder".format(self._modelPath), global_step=step)
 #         # plt.show()
 #     def load_model(self):
-#         tf.train.Saver().restore(self._sess, "{0}{1}".format(self._modelPath, "encoder-63"))
-#     def showAll(self):
-#         prePath = "/Users/yh_swjtu/Desktop/Machine/video/trainImg/"
+#         path = tf.train.latest_checkpoint(self._modelPath)
+#         tf.train.Saver().restore(self._sess, path)
+#     def showAll(self, batchSize=128):
+#         prePath = "F:/tensorflow/automodel/scrawler/video/trainImg/"
+#         resPath = r"F:/tensorflow/automodel/scrawler/video/resImg/"
 #         items = os.listdir(prePath)
-#         for file in items:
+#         tmp_list = []
+#         fileName_list = []
+#         totalFiles = len(items)
+#         for idx, file in enumerate(items):
 #             source = cv2.imread(r"{0}{1}".format(prePath, file)) / 255.0
-#             source = np.reshape(source, [1, 128, 128, 3])
-#             dest, loss = self._sess.run([self._reconstruct2, self._loss1], feed_dict={self._x: source})
-#             dest = np.reshape(dest, [128, 128, 3])
-#             dest = np.array(dest * 255, dtype=np.uint8)
-#             cv2.imwrite("{0}{1}".format(r"/Users/yh_swjtu/Desktop/Machine/video/res/", file), dest)
-#             print(file, " -- ", loss)
+#             tmp_list.append(source)
+#             fileName_list.append(file)
+#             if len(tmp_list) == batchSize:
+#                 matrix = np.array(tmp_list, dtype=np.float32)
+#                 dest = self._sess.run(self._reconstruct2, feed_dict={self._x: matrix})
+#                 for img, name in zip(dest, fileName_list):
+#                     dest = np.array(img * 255, dtype=np.uint8)
+#                     filePath = "{0}{1}".format(resPath, name)
+#                     cv2.imwrite(filePath, dest)
+#                     print(filePath)
+#                 tmp_list = []
+#                 fileName_list = []
+#             elif idx == (totalFiles - 1):
+#                 matrix = np.array(tmp_list, dtype=np.float32)
+#                 dest = self._sess.run(self._reconstruct2, feed_dict={self._x: matrix})
+#                 for img, name in zip(dest, fileName_list):
+#                     dest = np.array(img * 255, dtype=np.uint8)
+#                     filePath = "{0}{1}".format(resPath, name)
+#                     cv2.imwrite(filePath, dest)
+#                     print(filePath)
+#                 tmp_list = []
+#                 fileName_list = []
 #     def generateImage(self):
-#         source = cv2.imread(r"/Users/yh_swjtu/Desktop/Machine/video-1/trainImg/2985.jpg") / 255.0
+#         source = cv2.imread(r"F:/tensorflow/automodel/scrawler/video-1/trainImg/18.jpg") / 255.0
 #         source = np.reshape(source, [1, 128, 128, 3])
-#         dest, loss = self._sess.run([self._reconstruct1, self._loss1], feed_dict={self._x: source})
+#         dest, loss = self._sess.run([self._reconstruct1, self._loss2], feed_dict={self._x: source})
 #         print(loss)
 #         source = np.reshape(source, [128, 128, 3])
 #         dest = np.reshape(dest, [128, 128, 3])
@@ -562,10 +603,10 @@ class ConvolutionalAutoencoder:
 
 
 if __name__ == "__main__":
-    obj = AutoEncoder(5e-5, 100, 1, "/Users/yh_swjtu/Desktop/Machine/model/")
+    obj = AutoEncoder(5e-5, 100, 64, "F:/tensorflow/automodel/model_1/")
     obj.load_model()
-    obj.generateImage()
-    # obj.showAll()
+    # obj.generateImage()
+    obj.showAll()
     # obj.train(sourceTrainPath=r"F:/tensorflow/automodel/scrawler/video/trainImg/",
     #           destTrainPath=r"F:/tensorflow/automodel/scrawler/video-1/trainImg/")
     # obj = ConvolutionalAutoencoder(0.01, 5, 64)
