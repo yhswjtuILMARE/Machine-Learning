@@ -192,22 +192,22 @@ class AutoEncoder:
         # plt.show()
     def load_model(self):
         # tf.train.latest_checkpoint(self._modelPath)
-        tf.train.Saver().restore(self._sess, "{0}{1}".format(self._modelPath, "encoder-1"))
+        tf.train.Saver().restore(self._sess, "{0}{1}".format(self._modelPath, "encoder-12"))
     def showAll(self):
-        prePath = "F:/tensorflow/automodel/scrawler/video/trainImg/"
+        prePath = "/Users/yh_swjtu/Desktop/Machine/video/trainImg/"
         items = os.listdir(prePath)
         for file in items:
             source = cv2.imread(r"{0}{1}".format(prePath, file)) / 255.0
             source = np.reshape(source, [1, 128, 128, 3])
-            dest, loss = self._sess.run([self._reconstruct1, self._loss1], feed_dict={self._x: source})
+            dest, loss = self._sess.run([self._reconstruct2, self._loss1], feed_dict={self._x: source})
             dest = np.reshape(dest, [128, 128, 3])
             dest = np.array(dest * 255, dtype=np.uint8)
-            cv2.imwrite("{0}{1}".format(r"F:/tensorflow/automodel/scrawler/video/resultImg/", file), dest)
+            cv2.imwrite("{0}{1}".format(r"/Users/yh_swjtu/Desktop/Machine/video/res-1/", file), dest)
             print(file, " -- ", loss)
     def generateImage(self):
-        source = cv2.imread(r"/Users/yh_swjtu/Desktop/Machine/video-1/trainImg/23.jpg") / 255
+        source = cv2.imread(r"/Users/yh_swjtu/Desktop/Machine/video/trainImg/350.jpg") / 255
         source = np.reshape(source, [1, 128, 128, 3])
-        dest = self._sess.run(self._reconstruct1, feed_dict={self._x: source})
+        dest = self._sess.run(self._reconstruct2, feed_dict={self._x: source})
         source = np.reshape(source, [128, 128, 3])
         dest = np.reshape(dest, [128, 128, 3])
         dest = np.array(dest * 255, dtype=np.uint8)
@@ -405,7 +405,7 @@ def xavier_init(input_count, output_count, constant=1.0):
 #             tf.train.Saver().save(self._sess, save_path="{0}encoder".format(self._modelPath), global_step=step)
 #         # plt.show()
 #     def load_model(self):
-#         tf.train.Saver().restore(self._sess, "{0}{1}".format(self._modelPath, "encoder-15"))
+#         tf.train.Saver().restore(self._sess, "{0}{1}".format(self._modelPath, "encoder-63"))
 #     def showAll(self):
 #         prePath = "/Users/yh_swjtu/Desktop/Machine/video/trainImg/"
 #         items = os.listdir(prePath)
@@ -418,9 +418,9 @@ def xavier_init(input_count, output_count, constant=1.0):
 #             cv2.imwrite("{0}{1}".format(r"/Users/yh_swjtu/Desktop/Machine/video/res/", file), dest)
 #             print(file, " -- ", loss)
 #     def generateImage(self):
-#         source = cv2.imread(r"/Users/yh_swjtu/Desktop/Machine/video/trainImg/1815.jpg") / 255.0
+#         source = cv2.imread(r"/Users/yh_swjtu/Desktop/Machine/video-1/trainImg/2985.jpg") / 255.0
 #         source = np.reshape(source, [1, 128, 128, 3])
-#         dest, loss = self._sess.run([self._reconstruct2, self._loss1], feed_dict={self._x: source})
+#         dest, loss = self._sess.run([self._reconstruct1, self._loss1], feed_dict={self._x: source})
 #         print(loss)
 #         source = np.reshape(source, [128, 128, 3])
 #         dest = np.reshape(dest, [128, 128, 3])
