@@ -192,6 +192,7 @@ class AutoEncoder:
         # plt.show()
     def load_model(self):
         path = tf.train.latest_checkpoint(self._modelPath)
+        print(path)
         tf.train.Saver().restore(self._sess, path)
     def showAll(self, batchSize=32):
         prePath = "F:/tensorflow/automodel/scrawler/video/trainImg/"
@@ -225,9 +226,9 @@ class AutoEncoder:
                 tmp_list = []
                 fileName_list = []
     def generateImage(self):
-        source = cv2.imread(r"F:/tensorflow/automodel/scrawler/video/trainImg/18.jpg") / 255.0
+        source = cv2.imread(r"F:/tensorflow/automodel/scrawler/video/trainImg/3.jpg") / 255.0
         source = np.reshape(source, [1, 128, 128, 3])
-        dest = self._sess.run(self._reconstruct1, feed_dict={self._x: source})
+        dest = self._sess.run(self._reconstruct2, feed_dict={self._x: source})
         source = np.reshape(source, [128, 128, 3])
         dest = np.reshape(dest, [128, 128, 3])
         dest = np.array(dest * 255, dtype=np.uint8)
@@ -605,8 +606,8 @@ class ConvolutionalAutoencoder:
 if __name__ == "__main__":
     obj = AutoEncoder(5e-5, 100, 64, "F:/tensorflow/automodel/model_1/")
     obj.load_model()
-    # obj.generateImage()
-    obj.showAll()
+    obj.generateImage()
+    # obj.showAll()
     # obj.train(sourceTrainPath=r"F:/tensorflow/automodel/scrawler/video/trainImg/",
     #           destTrainPath=r"F:/tensorflow/automodel/scrawler/video-1/trainImg/")
     # obj = ConvolutionalAutoencoder(0.01, 5, 64)
