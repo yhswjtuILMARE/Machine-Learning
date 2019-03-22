@@ -16,6 +16,7 @@ import datetime
 import re
 import matplotlib as mpl
 import os
+from Tools.DataObject import get_training_data
 
 class AutoEncoder:
     def __init__(self, learning_rate, max_step,
@@ -33,12 +34,13 @@ class AutoEncoder:
         self.define_network()
         self.define_loss()
     def define_network(self):
-        self._x = tf.placeholder(shape=[None, 128, 128, self._channel], dtype=tf.float32)
+        self._x = tf.placeholder(shape=[None, 64, 64, self._channel], dtype=tf.float32)
+        self._input = tf.placeholder(shape=[None, 64, 64, self._channel], dtype=tf.float32)
         def define_encoder():
             with tf.name_scope("conv1"):
                 conv1_kernal = tf.get_variable(name="conv1_kernal", initializer=tf.glorot_uniform_initializer,
                                                shape=[5,5,self._channel,128], dtype=tf.float32)
-                h_conv1 = tf.nn.conv2d(self._x, conv1_kernal, strides=[1,2,2,1], padding="SAME")
+                h_conv1 = tf.nn.conv2d(self._input, conv1_kernal, strides=[1,2,2,1], padding="SAME")
                 conv1_b = tf.Variable(initial_value=tf.zeros([128], dtype=tf.float32))
                 conv1 = tf.nn.leaky_relu(tf.nn.bias_add(h_conv1, conv1_b), alpha=0.1)
             with tf.name_scope("conv2"):
@@ -71,7 +73,7 @@ class AutoEncoder:
                                      shape=[1024, tmp_dim])
                 b2 = tf.Variable(initial_value=tf.zeros([tmp_dim], dtype=tf.float32))
                 link2 = tf.nn.bias_add(tf.matmul(link1, w2), b2)
-                link2 = tf.reshape(link2, [-1, 8, 8, 1024])
+                link2 = tf.reshape(link2, [-1, 4, 4, 1024])
                 self._tmp = tf.reduce_mean(link1)
             with tf.name_scope("upscale1"):
                 upscale1_kernal = tf.Variable(initial_value=tf.truncated_normal(
@@ -170,16 +172,20 @@ class AutoEncoder:
             source_avg_cost = 0
             dest_avg_cost = 0
             for time in range(sourceCount + destCount):
-                train = sourceImgObj.generateBatch() / 255.0
-                _, loss, tmp = self._sess.run([self._optimizer1, self._loss1, self._tmp], feed_dict={self._x: train})
+                warp, target = sourceImgObj.generateBatch()
+                warp = warp / 255.0
+                target = target / 255.0
+                _, loss, tmp = self._sess.run([self._optimizer1, self._loss1, self._tmp], feed_dict={self._input: warp, self._x: target})
                 source_avg_cost += (loss / (sourceCount + destCount))
                 # sourceData.append(loss)
                 # ax.plot(np.arange(len(sourceData)), np.sqrt(sourceData), linewidth=0.8, color="r")
                 # plt.pause(0.01)
                 print(datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"), "- [source] cost: %3.5f" % loss,
                       "avg: %.5f" % tmp)
-                train = destImgObj.generateBatch() / 255.0
-                _, loss, tmp = self._sess.run([self._optimizer2, self._loss2, self._tmp], feed_dict={self._x: train})
+                warp, target = destImgObj.generateBatch()
+                warp = warp / 255.0
+                target = target / 255.0
+                _, loss, tmp = self._sess.run([self._optimizer2, self._loss2, self._tmp], feed_dict={self._input: warp, self._x: target})
                 dest_avg_cost += (loss / (sourceCount + destCount))
                 # destData.append(loss)
                 # bx.plot(np.arange(len(destData)), np.sqrt(destData), linewidth=0.8, color="b")
@@ -226,15 +232,19 @@ class AutoEncoder:
                 tmp_list = []
                 fileName_list = []
     def generateImage(self):
-        source = cv2.imread(r"F:/tensorflow/automodel/scrawler/video/trainImg/3.jpg") / 255.0
-        source = np.reshape(source, [1, 128, 128, 3])
-        dest = self._sess.run(self._reconstruct2, feed_dict={self._x: source})
-        source = np.reshape(source, [128, 128, 3])
-        dest = np.reshape(dest, [128, 128, 3])
+        source = cv2.imread(r"F:/tensorflow/automodel/scrawler/video/trainImg/18.jpg")
+        source = cv2.resize(source, (256, 256))
+        sourceWarp, sourceTarget = get_training_data(np.array([source]), 1)
+        sourceWarp = sourceWarp / 255.0
+        sourceTarget = sourceTarget / 255.0
+        dest, loss = self._sess.run([self._reconstruct1, self._loss1], feed_dict={self._x: sourceTarget, self._input: sourceWarp})
+        print(loss)
+        sourceTarget = np.reshape(sourceTarget, [64, 64, 3])
+        dest = np.reshape(dest, [64, 64, 3])
         dest = np.array(dest * 255, dtype=np.uint8)
         fig = plt.figure("compare")
         ax = fig.add_subplot(121)
-        b, g, r = cv2.split(source)
+        b, g, r = cv2.split(sourceTarget)
         source = cv2.merge([r, g, b])
         ax.imshow(source)
         ax.axis("off")
@@ -268,12 +278,13 @@ def xavier_init(input_count, output_count, constant=1.0):
 #         self.define_network()
 #         self.define_loss()
 #     def define_network(self):
-#         self._x = tf.placeholder(shape=[None, 128, 128, self._channel], dtype=tf.float32)
+#         self._x = tf.placeholder(shape=[None, 64, 64, self._channel], dtype=tf.float32)
+#         self._input = tf.placeholder(shape=[None, 64, 64, self._channel], dtype=tf.float32)
 #         def define_encoder():
 #             with tf.name_scope("conv1"):
 #                 conv1_kernal = tf.get_variable(name="conv1_kernal", initializer=tf.glorot_uniform_initializer,
 #                                                shape=[5,5,self._channel,64], dtype=tf.float32)
-#                 h_conv1 = tf.nn.conv2d(self._x, conv1_kernal, strides=[1,2,2,1], padding="SAME")
+#                 h_conv1 = tf.nn.conv2d(self._input, conv1_kernal, strides=[1,2,2,1], padding="SAME")
 #                 conv1_b = tf.Variable(initial_value=tf.zeros([64], dtype=tf.float32))
 #                 conv1 = tf.nn.leaky_relu(tf.nn.bias_add(h_conv1, conv1_b), alpha=0.1)
 #             with tf.name_scope("conv2"):
@@ -306,7 +317,7 @@ def xavier_init(input_count, output_count, constant=1.0):
 #                                      shape=[1024, tmp_dim])
 #                 b2 = tf.Variable(initial_value=tf.zeros([tmp_dim], dtype=tf.float32))
 #                 link2 = tf.nn.bias_add(tf.matmul(link1, w2), b2)
-#                 link2 = tf.reshape(link2, [-1, 8, 8, 512])
+#                 link2 = tf.reshape(link2, [-1, 4, 4, 512])
 #                 self._tmp = tf.reduce_mean(link1)
 #             with tf.name_scope("upscale1"):
 #                 upscale1_kernal = tf.Variable(initial_value=tf.truncated_normal(
@@ -405,16 +416,20 @@ def xavier_init(input_count, output_count, constant=1.0):
 #             source_avg_cost = 0
 #             dest_avg_cost = 0
 #             for time in range(sourceCount + destCount):
-#                 train = sourceImgObj.generateBatch() / 255.0
-#                 _, loss, tmp = self._sess.run([self._optimizer1, self._loss1, self._tmp], feed_dict={self._x: train})
+#                 warp, target = sourceImgObj.generateBatch()
+#                 warp = warp / 255.0
+#                 target = target / 255.0
+#                 _, loss, tmp = self._sess.run([self._optimizer1, self._loss1, self._tmp], feed_dict={self._input: warp, self._x: target})
 #                 source_avg_cost += (loss / (sourceCount + destCount))
 #                 # sourceData.append(loss)
 #                 # ax.plot(np.arange(len(sourceData)), np.sqrt(sourceData), linewidth=0.8, color="r")
 #                 # plt.pause(0.01)
 #                 print(datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"), "- [source] cost: %3.5f" % loss,
 #                       "avg: %3.5f" % tmp)
-#                 train = destImgObj.generateBatch() / 255.0
-#                 _, loss, tmp = self._sess.run([self._optimizer2, self._loss2, self._tmp], feed_dict={self._x: train})
+#                 warp, target = destImgObj.generateBatch()
+#                 warp = warp / 255.0
+#                 target = target / 255.0
+#                 _, loss, tmp = self._sess.run([self._optimizer2, self._loss2, self._tmp], feed_dict={self._input: warp, self._x: target})
 #                 dest_avg_cost += (loss / (sourceCount + destCount))
 #                 # destData.append(loss)
 #                 # bx.plot(np.arange(len(destData)), np.sqrt(destData), linewidth=0.8, color="b")
