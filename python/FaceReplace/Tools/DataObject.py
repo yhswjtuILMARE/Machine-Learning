@@ -63,19 +63,19 @@ def random_transform(image, rotation_range, zoom_range, shift_range, random_flip
     return result
 
 def random_warp(image):
-    assert image.shape == (256, 256, 3)
-    range_ = np.linspace(128 - 80, 128 + 80, 5)
-    mapx = np.broadcast_to(range_, (5, 5))
+    assert image.shape == (128, 128, 3)
+    range_ = np.linspace(64 - 64, 64 + 64, 9)
+    mapx = np.broadcast_to(range_, (9, 9))
     mapy = mapx.T
-    mapx = mapx + np.random.normal(size=(5, 5), scale=5)
-    mapy = mapy + np.random.normal(size=(5, 5), scale=5)
-    interp_mapx = cv2.resize(mapx, (80, 80))[8:72, 8:72].astype('float32')
-    interp_mapy = cv2.resize(mapy, (80, 80))[8:72, 8:72].astype('float32')
+    mapx = mapx + np.random.normal(size=(9, 9), scale=2.5)
+    mapy = mapy + np.random.normal(size=(9, 9), scale=2.5)
+    interp_mapx = cv2.resize(mapx, (160, 160))[16:144, 16:144].astype('float32')
+    interp_mapy = cv2.resize(mapy, (160, 160))[16:144, 16:144].astype('float32')
     warped_image = cv2.remap(image, interp_mapx, interp_mapy, cv2.INTER_LINEAR)
     src_points = np.stack([mapx.ravel(), mapy.ravel()], axis=-1)
-    dst_points = np.mgrid[0:65:16, 0:65:16].T.reshape(-1, 2)
+    dst_points = np.mgrid[0:129:16, 0:129:16].T.reshape(-1, 2)
     mat = umeyama(src_points, dst_points, True)[0:2]
-    target_image = cv2.warpAffine(image, mat, (64, 64))
+    target_image = cv2.warpAffine(image, mat, (128, 128))
     return warped_image, target_image
 
 
@@ -112,13 +112,11 @@ class ImageTrainObject:
         return_mat = []
         for file in destFile:
             img = cv2.imread("{0}{1}".format(self._filePath, file))
-            img = cv2.resize(img, (256, 256))
             return_mat.append(img)
         return get_training_data(np.array(return_mat, dtype=np.uint8), self._batchSize)
 
 if __name__ == "__main__":
-    img = cv2.imread(r"F:\tensorflow\automodel\scrawler\video-1\trainImg\100.jpg")
-    img = cv2.resize(img, dsize=(256, 256))
+    img = cv2.imread(r"F:\tensorflow\automodel\scrawler\video-1\trainImg\29.jpg")
     img = np.array([img], dtype=np.uint8)
     warp, target = get_training_data(img, 1)
     fig = plt.figure("compare")

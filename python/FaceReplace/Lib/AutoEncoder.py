@@ -34,8 +34,8 @@ class AutoEncoder:
         self.define_network()
         self.define_loss()
     def define_network(self):
-        self._x = tf.placeholder(shape=[None, 64, 64, self._channel], dtype=tf.float32)
-        self._input = tf.placeholder(shape=[None, 64, 64, self._channel], dtype=tf.float32)
+        self._x = tf.placeholder(shape=[None, 128, 128, self._channel], dtype=tf.float32)
+        self._input = tf.placeholder(shape=[None, 128, 128, self._channel], dtype=tf.float32)
         def define_encoder():
             with tf.name_scope("conv1"):
                 conv1_kernal = tf.get_variable(name="conv1_kernal", initializer=tf.glorot_uniform_initializer,
@@ -73,7 +73,7 @@ class AutoEncoder:
                                      shape=[1024, tmp_dim])
                 b2 = tf.Variable(initial_value=tf.zeros([tmp_dim], dtype=tf.float32))
                 link2 = tf.nn.bias_add(tf.matmul(link1, w2), b2)
-                link2 = tf.reshape(link2, [-1, 4, 4, 1024])
+                link2 = tf.reshape(link2, [-1, 8, 8, 1024])
                 self._tmp = tf.reduce_mean(link1)
             with tf.name_scope("upscale1"):
                 upscale1_kernal = tf.Variable(initial_value=tf.truncated_normal(
@@ -232,15 +232,15 @@ class AutoEncoder:
                 tmp_list = []
                 fileName_list = []
     def generateImage(self):
-        source = cv2.imread(r"F:/tensorflow/automodel/scrawler/video/trainImg/18.jpg")
-        source = cv2.resize(source, (256, 256))
+        source = cv2.imread(r"F:/tensorflow/automodel/scrawler/video/trainImg/713.jpg")
         sourceWarp, sourceTarget = get_training_data(np.array([source]), 1)
         sourceWarp = sourceWarp / 255.0
         sourceTarget = sourceTarget / 255.0
-        dest, loss = self._sess.run([self._reconstruct1, self._loss1], feed_dict={self._x: sourceTarget, self._input: sourceWarp})
+        dest, loss = self._sess.run([self._reconstruct2, self._loss1],
+                                    feed_dict={self._x: sourceTarget, self._input: sourceWarp})
         print(loss)
-        sourceTarget = np.reshape(sourceTarget, [64, 64, 3])
-        dest = np.reshape(dest, [64, 64, 3])
+        sourceTarget = np.reshape(sourceTarget, [128, 128, 3])
+        dest = np.reshape(dest, [128, 128, 3])
         dest = np.array(dest * 255, dtype=np.uint8)
         fig = plt.figure("compare")
         ax = fig.add_subplot(121)
@@ -278,8 +278,8 @@ def xavier_init(input_count, output_count, constant=1.0):
 #         self.define_network()
 #         self.define_loss()
 #     def define_network(self):
-#         self._x = tf.placeholder(shape=[None, 64, 64, self._channel], dtype=tf.float32)
-#         self._input = tf.placeholder(shape=[None, 64, 64, self._channel], dtype=tf.float32)
+#         self._x = tf.placeholder(shape=[None, 128, 128, self._channel], dtype=tf.float32)
+#         self._input = tf.placeholder(shape=[None, 128, 128, self._channel], dtype=tf.float32)
 #         def define_encoder():
 #             with tf.name_scope("conv1"):
 #                 conv1_kernal = tf.get_variable(name="conv1_kernal", initializer=tf.glorot_uniform_initializer,
@@ -317,7 +317,7 @@ def xavier_init(input_count, output_count, constant=1.0):
 #                                      shape=[1024, tmp_dim])
 #                 b2 = tf.Variable(initial_value=tf.zeros([tmp_dim], dtype=tf.float32))
 #                 link2 = tf.nn.bias_add(tf.matmul(link1, w2), b2)
-#                 link2 = tf.reshape(link2, [-1, 4, 4, 512])
+#                 link2 = tf.reshape(link2, [-1, 8, 8, 512])
 #                 self._tmp = tf.reduce_mean(link1)
 #             with tf.name_scope("upscale1"):
 #                 upscale1_kernal = tf.Variable(initial_value=tf.truncated_normal(
@@ -619,10 +619,10 @@ class ConvolutionalAutoencoder:
 
 
 if __name__ == "__main__":
-    obj = AutoEncoder(5e-5, 100, 64, "F:/tensorflow/automodel/model_1/")
+    obj = AutoEncoder(5e-5, 100, 8, "F:/tensorflow/automodel/model_1/")
     obj.load_model()
     obj.generateImage()
-    # obj.showAll()
+    obj.showAll()
     # obj.train(sourceTrainPath=r"F:/tensorflow/automodel/scrawler/video/trainImg/",
     #           destTrainPath=r"F:/tensorflow/automodel/scrawler/video-1/trainImg/")
     # obj = ConvolutionalAutoencoder(0.01, 5, 64)
