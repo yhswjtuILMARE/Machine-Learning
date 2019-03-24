@@ -69,13 +69,13 @@ def random_warp(image):
     mapy = mapx.T
     mapx = mapx + np.random.normal(size=(9, 9), scale=2.5)
     mapy = mapy + np.random.normal(size=(9, 9), scale=2.5)
-    interp_mapx = cv2.resize(mapx, (160, 160))[16:144, 16:144].astype('float32')
-    interp_mapy = cv2.resize(mapy, (160, 160))[16:144, 16:144].astype('float32')
+    interp_mapx = cv2.resize(mapx, (80, 80))[8:72, 8:72].astype('float32')
+    interp_mapy = cv2.resize(mapy, (80, 80))[8:72, 8:72].astype('float32')
     warped_image = cv2.remap(image, interp_mapx, interp_mapy, cv2.INTER_LINEAR)
     src_points = np.stack([mapx.ravel(), mapy.ravel()], axis=-1)
-    dst_points = np.mgrid[0:129:16, 0:129:16].T.reshape(-1, 2)
+    dst_points = np.mgrid[0:65:8, 0:65:8].T.reshape(-1, 2)
     mat = umeyama(src_points, dst_points, True)[0:2]
-    target_image = cv2.warpAffine(image, mat, (128, 128))
+    target_image = cv2.warpAffine(image, mat, (64, 64))
     return warped_image, target_image
 
 
@@ -116,7 +116,7 @@ class ImageTrainObject:
         return get_training_data(np.array(return_mat, dtype=np.uint8), self._batchSize)
 
 if __name__ == "__main__":
-    img = cv2.imread(r"F:\tensorflow\automodel\scrawler\video-1\trainImg\29.jpg")
+    img = cv2.imread(r"F:\tensorflow\automodel\scrawler\video\trainImg\18.jpg")
     img = np.array([img], dtype=np.uint8)
     warp, target = get_training_data(img, 1)
     fig = plt.figure("compare")

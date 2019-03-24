@@ -34,8 +34,8 @@ class AutoEncoder:
         self.define_network()
         self.define_loss()
     def define_network(self):
-        self._x = tf.placeholder(shape=[None, 128, 128, self._channel], dtype=tf.float32)
-        self._input = tf.placeholder(shape=[None, 128, 128, self._channel], dtype=tf.float32)
+        self._x = tf.placeholder(shape=[None, 64, 64, self._channel], dtype=tf.float32)
+        self._input = tf.placeholder(shape=[None, 64, 64, self._channel], dtype=tf.float32)
         def define_encoder():
             with tf.name_scope("conv1"):
                 conv1_kernal = tf.get_variable(name="conv1_kernal", initializer=tf.glorot_uniform_initializer,
@@ -73,7 +73,7 @@ class AutoEncoder:
                                      shape=[1024, tmp_dim])
                 b2 = tf.Variable(initial_value=tf.zeros([tmp_dim], dtype=tf.float32))
                 link2 = tf.nn.bias_add(tf.matmul(link1, w2), b2)
-                link2 = tf.reshape(link2, [-1, 8, 8, 1024])
+                link2 = tf.reshape(link2, [-1, 4, 4, 1024])
                 self._tmp = tf.reduce_mean(link1)
             with tf.name_scope("upscale1"):
                 upscale1_kernal = tf.Variable(initial_value=tf.truncated_normal(
@@ -278,8 +278,8 @@ def xavier_init(input_count, output_count, constant=1.0):
 #         self.define_network()
 #         self.define_loss()
 #     def define_network(self):
-#         self._x = tf.placeholder(shape=[None, 128, 128, self._channel], dtype=tf.float32)
-#         self._input = tf.placeholder(shape=[None, 128, 128, self._channel], dtype=tf.float32)
+#         self._x = tf.placeholder(shape=[None, 64, 64, self._channel], dtype=tf.float32)
+#         self._input = tf.placeholder(shape=[None, 64, 64, self._channel], dtype=tf.float32)
 #         def define_encoder():
 #             with tf.name_scope("conv1"):
 #                 conv1_kernal = tf.get_variable(name="conv1_kernal", initializer=tf.glorot_uniform_initializer,
@@ -317,7 +317,7 @@ def xavier_init(input_count, output_count, constant=1.0):
 #                                      shape=[1024, tmp_dim])
 #                 b2 = tf.Variable(initial_value=tf.zeros([tmp_dim], dtype=tf.float32))
 #                 link2 = tf.nn.bias_add(tf.matmul(link1, w2), b2)
-#                 link2 = tf.reshape(link2, [-1, 8, 8, 512])
+#                 link2 = tf.reshape(link2, [-1, 4, 4, 512])
 #                 self._tmp = tf.reduce_mean(link1)
 #             with tf.name_scope("upscale1"):
 #                 upscale1_kernal = tf.Variable(initial_value=tf.truncated_normal(
@@ -619,12 +619,12 @@ class ConvolutionalAutoencoder:
 
 
 if __name__ == "__main__":
-    obj = AutoEncoder(5e-5, 100, 8, "F:/tensorflow/automodel/model_1/")
-    obj.load_model()
-    obj.generateImage()
-    obj.showAll()
-    # obj.train(sourceTrainPath=r"F:/tensorflow/automodel/scrawler/video/trainImg/",
-    #           destTrainPath=r"F:/tensorflow/automodel/scrawler/video-1/trainImg/")
+    obj = AutoEncoder(5e-5, 100, 64, "F:/tensorflow/automodel/model_1/")
+    # obj.load_model()
+    # obj.generateImage()
+    # obj.showAll()
+    obj.train(sourceTrainPath=r"F:/tensorflow/automodel/scrawler/video/trainImg/",
+              destTrainPath=r"F:/tensorflow/automodel/scrawler/video-1/trainImg/")
     # obj = ConvolutionalAutoencoder(0.01, 5, 64)
     # obj.train()
     # obj.load_model()
