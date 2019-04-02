@@ -208,39 +208,50 @@ class AutoEncoder:
         fileName_list = []
         totalFiles = len(items)
         for idx, file in enumerate(items):
-            source = cv2.imread(r"{0}{1}".format(prePath, file)) / 255.0
+            source = cv2.imread(r"{0}{1}".format(prePath, file))
             tmp_list.append(source)
             fileName_list.append(file)
             if len(tmp_list) == batchSize:
-                matrix = np.array(tmp_list, dtype=np.float32)
-                dest = self._sess.run(self._reconstruct2, feed_dict={self._x: matrix})
+                sourceWarp, sourceTarget = get_training_data(np.array(tmp_list), batchSize)
+                sourceWarp = sourceWarp / 255.0
+                sourceTarget = sourceTarget / 255.0
+                dest = self._sess.run(self._reconstruct2,
+                                            feed_dict={self._x: sourceTarget, self._input: sourceWarp})
                 for img, name in zip(dest, fileName_list):
                     dest = np.array(img * 255, dtype=np.uint8)
+                    dest = cv2.resize(dest, (128, 128))
                     filePath = "{0}{1}".format(resPath, name)
                     cv2.imwrite(filePath, dest)
                     print(filePath)
                 tmp_list = []
                 fileName_list = []
             elif idx == (totalFiles - 1):
-                matrix = np.array(tmp_list, dtype=np.float32)
-                dest = self._sess.run(self._reconstruct2, feed_dict={self._x: matrix})
+                sourceWarp, sourceTarget = get_training_data(np.array(tmp_list), batchSize)
+                sourceWarp = sourceWarp / 255.0
+                sourceTarget = sourceTarget / 255.0
+                dest = self._sess.run(self._reconstruct2,
+                                      feed_dict={self._x: sourceTarget, self._input: sourceWarp})
                 for img, name in zip(dest, fileName_list):
                     dest = np.array(img * 255, dtype=np.uint8)
+                    dest = cv2.resize(dest, (128, 128))
                     filePath = "{0}{1}".format(resPath, name)
                     cv2.imwrite(filePath, dest)
                     print(filePath)
                 tmp_list = []
                 fileName_list = []
     def generateImage(self):
-        source = cv2.imread(r"F:/tensorflow/automodel/scrawler/video/trainImg/713.jpg")
+        source = cv2.imread(r"F:/tensorflow/automodel/scrawler/video/trainImg/18.jpg")
         sourceWarp, sourceTarget = get_training_data(np.array([source]), 1)
         sourceWarp = sourceWarp / 255.0
         sourceTarget = sourceTarget / 255.0
+        source = cv2.resize(source, (64, 64))
+        source = np.array([source], dtype=np.float32)
+        source = source / 255.0
         dest, loss = self._sess.run([self._reconstruct2, self._loss1],
-                                    feed_dict={self._x: sourceTarget, self._input: sourceWarp})
+                                    feed_dict={self._x: sourceTarget, self._input: source})
         print(loss)
-        sourceTarget = np.reshape(sourceTarget, [128, 128, 3])
-        dest = np.reshape(dest, [128, 128, 3])
+        sourceTarget = np.reshape(source, [64, 64, 3])
+        dest = np.reshape(dest, [64, 64, 3])
         dest = np.array(dest * 255, dtype=np.uint8)
         fig = plt.figure("compare")
         ax = fig.add_subplot(121)
@@ -620,11 +631,11 @@ class ConvolutionalAutoencoder:
 
 if __name__ == "__main__":
     obj = AutoEncoder(5e-5, 100, 64, "F:/tensorflow/automodel/model_1/")
-    # obj.load_model()
-    # obj.generateImage()
+    obj.load_model()
+    obj.generateImage()
     # obj.showAll()
-    obj.train(sourceTrainPath=r"F:/tensorflow/automodel/scrawler/video/trainImg/",
-              destTrainPath=r"F:/tensorflow/automodel/scrawler/video-1/trainImg/")
+    # obj.train(sourceTrainPath=r"F:/tensorflow/automodel/scrawler/video/trainImg/",
+    #           destTrainPath=r"F:/tensorflow/automodel/scrawler/video-1/trainImg/")
     # obj = ConvolutionalAutoencoder(0.01, 5, 64)
     # obj.train()
     # obj.load_model()
